@@ -7,171 +7,275 @@
   <style>
     :root{
       --bg:#f5f7fb; --surface:#fff; --surface-soft:#f8fafc; --muted:#667085; --text:#101828;
-      --border:#e4e7ec; --primary:#2f6fed; --danger:#d92d20; --success:#12b76a; --shadow:0 10px 30px rgba(16,24,40,.06);
+      --border:#e4e7ec; --primary:#2f6fed; --danger:#f04438; --success:#12b76a; --shadow:0 10px 30px rgba(16,24,40,.06);
     }
     *{box-sizing:border-box} body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--text)}
     .container{width:min(1220px,calc(100% - 32px));margin:0 auto}
     .topbar{background:#fff;border-bottom:1px solid var(--border)}
-    .topbar-inner{height:74px;display:flex;align-items:center;justify-content:space-between}
-    .topbar a{text-decoration:none;color:#344054;font-weight:600}
-    .layout{display:grid;grid-template-columns:420px 1fr;gap:20px;padding:22px 0 40px}
-    .panel{background:#fff;border:1px solid var(--border);border-radius:22px;box-shadow:var(--shadow)}
-    .panel-header{padding:20px 22px;border-bottom:1px solid var(--border)}
-    .panel-body{padding:20px 22px}
-    .title{margin:0;font-size:24px;font-weight:800}
-    .subtitle{margin:6px 0 0;color:var(--muted);font-size:14px}
-    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    .field{margin-bottom:14px}
-    label{display:block;margin-bottom:8px;font-size:13px;font-weight:700;color:#344054}
-    input,select,textarea{width:100%;border:1px solid var(--border);border-radius:14px;background:#fff;padding:13px 14px;font-size:15px;outline:none}
-    textarea{min-height:88px;resize:vertical}
-    .hint{font-size:12px;color:var(--muted);margin-top:6px}
-    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
-    button{border:none;border-radius:14px;padding:12px 16px;font-size:14px;font-weight:700;cursor:pointer}
+    .topbar-inner{height:74px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .brand{display:flex;align-items:center;gap:12px}.brand-badge{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,#2f6fed,#1d4ed8);color:#fff;display:grid;place-items:center;box-shadow:0 10px 20px rgba(47,111,237,.25)}
+    .brand h1{margin:0;font-size:28px;font-weight:800}.brand p{margin:2px 0 0;color:var(--muted);font-size:14px}
+    .nav a{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border:1px solid var(--border);border-radius:14px;background:#fff;color:#344054;text-decoration:none;font-size:14px;font-weight:600}
+    .header{padding:28px 0 16px}.header h2{margin:0 0 16px;font-size:32px;letter-spacing:-.03em}
+    .tabs{display:flex;gap:10px;flex-wrap:wrap}
+    .tab-btn{padding:10px 16px;border:1px solid var(--border);border-radius:14px;background:#fff;color:#667085;font-weight:700;cursor:pointer}
+    .tab-btn.active{background:#f9fafb;color:#101828;box-shadow:var(--shadow)}
+    .toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:28px 0 16px}
+    .toolbar-left{color:#475467;font-size:15px;font-weight:600}
+    .toolbar-right{display:flex;gap:10px;align-items:center}
+    .search{width:min(420px,100%);height:48px;border:1px solid var(--border);border-radius:14px;padding:0 14px;font-size:15px;background:#fff}
+    .btn{border:none;border-radius:14px;padding:12px 16px;font-size:14px;font-weight:700;cursor:pointer}
     .btn-primary{background:var(--primary);color:#fff}
-    .btn-secondary{background:#eef2ff;color:#2f6fed}
-    .btn-danger{background:#fee4e2;color:var(--danger)}
-    .btn-ghost{background:#f8fafc;color:#344054;border:1px solid var(--border)}
-    .auth-box{max-width:420px;margin:40px auto}
+    .btn-danger{background:#fee4e2;color:#b42318}
+    .btn-secondary{background:#eff4ff;color:#175cd3}
+    .btn-ghost{background:#fff;border:1px solid var(--border);color:#344054}
+    .panel{display:none}.panel.active{display:block}
+    .list{display:grid;gap:14px}
+    .item{background:#fff;border:1px solid var(--border);border-radius:20px;box-shadow:var(--shadow);display:flex;align-items:center;justify-content:space-between;gap:16px;overflow:hidden}
+    .item-left{display:flex;align-items:center;gap:16px;min-width:0;flex:1}
+    .thumb{width:112px;height:82px;background:#eef2f6;object-fit:cover;display:block;flex:0 0 auto}
+    .thumb.placeholder{display:grid;place-items:center;color:#98a2b3;font-size:28px;font-weight:700}
+    .item-body{padding:18px 0;min-width:0}
+    .item-title{margin:0 0 6px;font-size:18px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .item-meta{color:#667085;font-size:14px;line-height:1.5}
+    .item-actions{display:flex;gap:10px;padding:0 18px 0 0}
+    .icon-btn{width:36px;height:36px;border:none;border-radius:10px;background:#fff;cursor:pointer;font-size:18px}
+    .icon-btn.edit{color:#101828}.icon-btn.delete{color:#f04438}
+    .empty{padding:28px;text-align:center;background:#fff;border:1px dashed var(--border);border-radius:20px;color:#667085}
+    .auth-wrap{max-width:430px;margin:40px auto}
+    .card{background:#fff;border:1px solid var(--border);border-radius:22px;box-shadow:var(--shadow)}
+    .card-header{padding:20px 22px;border-bottom:1px solid var(--border)}
+    .card-body{padding:20px 22px}
+    .field{margin-bottom:14px} label{display:block;margin-bottom:8px;font-size:13px;font-weight:700;color:#344054}
+    input[type="text"],input[type="number"],input[type="email"],input[type="password"],select,textarea,input[type="file"]{width:100%;border:1px solid var(--border);border-radius:14px;background:#fff;padding:13px 14px;font-size:15px;outline:none}
+    textarea{min-height:100px;resize:vertical}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
     .status{padding:12px 14px;border-radius:14px;font-size:14px;font-weight:600;margin-bottom:14px;display:none}
     .status.show{display:block}.status.error{background:#fee4e2;color:#b42318}.status.success{background:#dcfae6;color:#067647}
-    .list{display:grid;gap:12px}
-    .list-item{padding:16px;border:1px solid var(--border);border-radius:18px;background:var(--surface-soft);display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
-    .list-title{font-size:20px;font-weight:800;margin:0 0 6px}
-    .list-meta{font-size:13px;color:var(--muted);line-height:1.6}
-    .pill-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
-    .pill{padding:7px 10px;border-radius:999px;background:#fff;border:1px solid var(--border);font-size:12px;font-weight:700}
+    .modal{position:fixed;inset:0;background:rgba(16,24,40,.55);display:none;align-items:center;justify-content:center;padding:20px;z-index:50}
+    .modal.active{display:flex}
+    .modal-box{width:min(740px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:24px;box-shadow:0 30px 80px rgba(0,0,0,.25)}
+    .modal-header{padding:20px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .modal-title{margin:0;font-size:24px;font-weight:800}
+    .close{width:40px;height:40px;border-radius:12px;border:1px solid var(--border);background:#fff;cursor:pointer;font-size:18px}
+    .modal-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+    .hidden{display:none!important}
     .thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-    .thumbs img{width:72px;height:56px;object-fit:cover;border-radius:10px;border:1px solid var(--border)}
-    .hidden{display:none}
-    @media (max-width:980px){.layout{grid-template-columns:1fr}.grid2{grid-template-columns:1fr}}
+    .thumbs .img-box{position:relative}
+    .thumbs img{width:86px;height:66px;object-fit:cover;border-radius:10px;border:1px solid var(--border)}
+    .thumbs button{position:absolute;top:-6px;right:-6px;width:22px;height:22px;border:none;border-radius:999px;background:#fee4e2;color:#b42318;font-weight:800;cursor:pointer}
+    @media (max-width:860px){.grid2{grid-template-columns:1fr}.toolbar{flex-direction:column;align-items:stretch}.toolbar-right{flex-direction:column;align-items:stretch}.search{width:100%}.item{align-items:flex-start}.thumb{width:90px;height:72px}}
   </style>
 </head>
 <body>
   <header class="topbar">
     <div class="container topbar-inner">
-      <a href="./index.html">← Ana Sayfa</a>
-      <div style="display:flex;gap:10px;align-items:center">
-        <span id="userEmail" style="font-size:14px;color:#667085"></span>
-        <button id="logoutBtn" class="btn-ghost hidden">Çıkış Yap</button>
+      <div class="brand">
+        <div class="brand-badge">🏫</div>
+        <div>
+          <h1 id="brandTitle">Kampüs Rehberi</h1>
+          <p id="brandSubtitle">Sınıf Görselleri</p>
+        </div>
       </div>
+      <nav class="nav" style="display:flex;gap:10px;align-items:center">
+        <a href="./index.html">Ana Sayfa</a>
+        <a href="./admin.html">Yönetim</a>
+        <button id="logoutBtn" class="btn btn-ghost hidden">Çıkış Yap</button>
+      </nav>
     </div>
   </header>
 
   <div class="container">
-    <div id="authView" class="auth-box panel">
-      <div class="panel-header">
-        <h1 class="title">Yönetim Girişi</h1>
-        <p class="subtitle">Sadece yetkili kullanıcılar giriş yapabilir.</p>
+    <div id="authView" class="auth-wrap card">
+      <div class="card-header">
+        <h2 style="margin:0;font-size:28px;font-weight:800">Yönetim Girişi</h2>
+        <p style="margin:6px 0 0;color:#667085">Firebase Authentication ile giriş yapın.</p>
       </div>
-      <div class="panel-body">
+      <div class="card-body">
         <div id="authStatus" class="status"></div>
         <div class="field">
           <label>E-posta</label>
-          <input id="loginEmail" type="email" placeholder="admin@ornek.com" />
+          <input id="loginEmail" type="email" placeholder="admin@site.com" />
         </div>
         <div class="field">
           <label>Şifre</label>
           <input id="loginPassword" type="password" placeholder="Şifreniz" />
         </div>
-        <div class="actions">
-          <button id="loginBtn" class="btn-primary">Giriş Yap</button>
-        </div>
+        <button id="loginBtn" class="btn btn-primary">Giriş Yap</button>
       </div>
     </div>
 
-    <div id="adminView" class="layout hidden">
-      <section class="panel">
-        <div class="panel-header">
-          <h2 class="title" id="formTitle">Yeni Derslik</h2>
-          <p class="subtitle">Tüm alanları yönetim panelinden doldurabilir, görselleri buradan yükleyebilirsiniz.</p>
-        </div>
-        <div class="panel-body">
-          <div id="formStatus" class="status"></div>
-          <div class="grid2">
-            <div class="field">
-              <label>Derslik Kodu</label>
-              <input id="code" type="text" placeholder="B201" />
-            </div>
-            <div class="field">
-              <label>Kapasite</label>
-              <input id="capacity" type="number" min="0" placeholder="152" />
-            </div>
-          </div>
-
-          <div class="grid2">
-            <div class="field">
-              <label>Kampüs</label>
-              <input id="campus" type="text" placeholder="İSTANBUL-BEŞİKTAŞ" />
-            </div>
-            <div class="field">
-              <label>Bina</label>
-              <input id="building" type="text" placeholder="B Blok (Beşiktaş)" />
-            </div>
-          </div>
-
-          <div class="grid2">
-            <div class="field">
-              <label>Kat</label>
-              <input id="floor" type="text" placeholder="2.Kat" />
-            </div>
-            <div class="field">
-              <label>Tür</label>
-              <input id="type" type="text" placeholder="Amfi / Standart Derslik / Lab" />
-            </div>
-          </div>
-
-          <div class="field">
-            <label>Özellikler</label>
-            <input id="features" type="text" placeholder="Projeksiyon, Klima, Akıllı Tahta" />
-            <div class="hint">Virgülle ayırın.</div>
-          </div>
-
-          <div class="field">
-            <label>Açıklama</label>
-            <textarea id="description" placeholder="İsteğe bağlı açıklama alanı"></textarea>
-          </div>
-
-          <div class="field">
-            <label>Görseller</label>
-            <input id="images" type="file" accept="image/*" multiple />
-            <div class="hint">Birden fazla görsel seçebilirsiniz. Kaydet butonunda Firebase Storage'a yüklenecek.</div>
-          </div>
-
-          <div id="existingImagesWrap" class="field hidden">
-            <label>Mevcut Görseller</label>
-            <div id="existingImages" class="thumbs"></div>
-          </div>
-
-          <div class="actions">
-            <button id="saveBtn" class="btn-primary">Kaydet</button>
-            <button id="resetBtn" class="btn-secondary">Yeni Kayıt</button>
-            <button id="deleteBtn" class="btn-danger hidden">Sil</button>
-          </div>
+    <div id="appView" class="hidden">
+      <section class="header">
+        <h2>Yönetim Paneli</h2>
+        <div class="tabs">
+          <button class="tab-btn active" data-tab="campuses">Kampüsler</button>
+          <button class="tab-btn" data-tab="blocks">Bloklar</button>
+          <button class="tab-btn" data-tab="classrooms">Sınıflar</button>
+          <button class="tab-btn" data-tab="settings">Ayarlar</button>
         </div>
       </section>
 
-      <section class="panel">
-        <div class="panel-header">
-          <h2 class="title">Derslik Listesi</h2>
-          <p class="subtitle">Kayıtları düzenlemek için bir satıra tıklayın.</p>
-        </div>
-        <div class="panel-body">
-          <div class="field">
-            <label>Liste İçinde Ara</label>
-            <input id="listSearch" type="text" placeholder="B201 / Beşiktaş / Bina..." />
+      <section id="campusesPanel" class="panel active">
+        <div class="toolbar">
+          <div class="toolbar-left"><span id="campusCount">0</span> kampüs</div>
+          <div class="toolbar-right">
+            <button id="newCampusBtn" class="btn btn-primary">＋ Yeni Kampüs</button>
           </div>
-          <div id="listContainer" class="list"></div>
+        </div>
+        <div id="campusList" class="list"></div>
+      </section>
+
+      <section id="blocksPanel" class="panel">
+        <div class="toolbar">
+          <div class="toolbar-left"><span id="blockCount">0</span> blok</div>
+          <div class="toolbar-right">
+            <button id="newBlockBtn" class="btn btn-primary">＋ Yeni Blok</button>
+          </div>
+        </div>
+        <div id="blockList" class="list"></div>
+      </section>
+
+      <section id="classroomsPanel" class="panel">
+        <div class="toolbar">
+          <div class="toolbar-left"><span id="classroomCount">0</span> sınıf</div>
+          <div class="toolbar-right">
+            <input id="classroomSearch" class="search" type="text" placeholder="Sınıf adı, blok veya kat ile ara..." />
+            <button id="newClassroomBtn" class="btn btn-primary">＋ Yeni Sınıf</button>
+          </div>
+        </div>
+        <div id="classroomList" class="list"></div>
+      </section>
+
+      <section id="settingsPanel" class="panel">
+        <div class="toolbar">
+          <div class="toolbar-left">Site ayarları</div>
+        </div>
+        <div class="card">
+          <div class="card-body">
+            <div id="settingsStatus" class="status"></div>
+            <div class="grid2">
+              <div class="field">
+                <label>Site Başlığı</label>
+                <input id="settingTitle" type="text" placeholder="Kampüs Rehberi" />
+              </div>
+              <div class="field">
+                <label>Alt Başlık</label>
+                <input id="settingSubtitle" type="text" placeholder="Sınıf Görselleri" />
+              </div>
+            </div>
+            <div class="field">
+              <label>Logo / Kapak Görseli</label>
+              <input id="settingLogo" type="file" accept="image/*" />
+            </div>
+            <div id="settingLogoPreview" class="thumbs"></div>
+            <button id="saveSettingsBtn" class="btn btn-primary">Ayarları Kaydet</button>
+          </div>
         </div>
       </section>
     </div>
   </div>
 
+  <div id="entityModal" class="modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="modalTitle" class="modal-title">Yeni Kayıt</h3>
+        <button id="closeModal" class="close">✕</button>
+      </div>
+      <div class="card-body">
+        <div id="modalStatus" class="status"></div>
+
+        <div id="campusForm" class="hidden">
+          <div class="field">
+            <label>Kampüs Adı</label>
+            <input id="campusName" type="text" placeholder="İSTANBUL-BEŞİKTAŞ" />
+          </div>
+          <div class="field">
+            <label>Kapak Görseli</label>
+            <input id="campusImage" type="file" accept="image/*" />
+          </div>
+          <div id="campusImagePreview" class="thumbs"></div>
+        </div>
+
+        <div id="blockForm" class="hidden">
+          <div class="grid2">
+            <div class="field">
+              <label>Blok Adı</label>
+              <input id="blockName" type="text" placeholder="B Blok (Beşiktaş)" />
+            </div>
+            <div class="field">
+              <label>Bağlı Kampüs</label>
+              <select id="blockCampusId"></select>
+            </div>
+          </div>
+          <div class="grid2">
+            <div class="field">
+              <label>Kat Sayısı</label>
+              <input id="blockFloorCount" type="number" min="0" placeholder="10" />
+            </div>
+            <div class="field">
+              <label>Kapak Görseli</label>
+              <input id="blockImage" type="file" accept="image/*" />
+            </div>
+          </div>
+          <div id="blockImagePreview" class="thumbs"></div>
+        </div>
+
+        <div id="classroomForm" class="hidden">
+          <div class="grid2">
+            <div class="field">
+              <label>Sınıf Kodu</label>
+              <input id="classroomCode" type="text" placeholder="B201" />
+            </div>
+            <div class="field">
+              <label>Kapasite</label>
+              <input id="classroomCapacity" type="number" min="0" placeholder="152" />
+            </div>
+          </div>
+          <div class="grid2">
+            <div class="field">
+              <label>Kampüs</label>
+              <select id="classroomCampusId"></select>
+            </div>
+            <div class="field">
+              <label>Blok</label>
+              <select id="classroomBlockId"></select>
+            </div>
+          </div>
+          <div class="grid2">
+            <div class="field">
+              <label>Kat</label>
+              <input id="classroomFloor" type="text" placeholder="2.Kat" />
+            </div>
+            <div class="field">
+              <label>Tür</label>
+              <input id="classroomType" type="text" placeholder="Amfi / Standart Derslik / Lab" />
+            </div>
+          </div>
+          <div class="field">
+            <label>Özellikler</label>
+            <input id="classroomFeatures" type="text" placeholder="Projeksiyon, Klima, Akıllı Tahta" />
+          </div>
+          <div class="field">
+            <label>Görseller</label>
+            <input id="classroomImages" type="file" accept="image/*" multiple />
+          </div>
+          <div id="classroomImagePreview" class="thumbs"></div>
+        </div>
+
+        <div class="modal-actions">
+          <button id="saveEntityBtn" class="btn btn-primary">Kaydet</button>
+          <button id="deleteEntityBtn" class="btn btn-danger hidden">Sil</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script type="module">
-    import { app, db, auth, storage } from './firebase-config.js';
+    import { db, auth, storage } from './firebase-config.js';
     import {
-      collection, addDoc, getDocs, getDoc, doc, updateDoc, deleteDoc,
-      serverTimestamp, query, orderBy
+      collection, getDocs, getDoc, query, orderBy, addDoc, updateDoc, deleteDoc,
+      doc, serverTimestamp, setDoc
     } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js';
     import {
       signInWithEmailAndPassword, onAuthStateChanged, signOut
@@ -180,40 +284,17 @@
       ref, uploadBytes, getDownloadURL, deleteObject
     } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-storage.js';
 
-    const authView = document.getElementById('authView');
-    const adminView = document.getElementById('adminView');
-    const userEmail = document.getElementById('userEmail');
-    const logoutBtn = document.getElementById('logoutBtn');
+    const $ = id => document.getElementById(id);
 
-    const authStatus = document.getElementById('authStatus');
-    const formStatus = document.getElementById('formStatus');
-
-    const loginEmail = document.getElementById('loginEmail');
-    const loginPassword = document.getElementById('loginPassword');
-    const loginBtn = document.getElementById('loginBtn');
-
-    const formTitle = document.getElementById('formTitle');
-    const code = document.getElementById('code');
-    const capacity = document.getElementById('capacity');
-    const campus = document.getElementById('campus');
-    const building = document.getElementById('building');
-    const floor = document.getElementById('floor');
-    const type = document.getElementById('type');
-    const features = document.getElementById('features');
-    const description = document.getElementById('description');
-    const images = document.getElementById('images');
-    const saveBtn = document.getElementById('saveBtn');
-    const resetBtn = document.getElementById('resetBtn');
-    const deleteBtn = document.getElementById('deleteBtn');
-    const existingImagesWrap = document.getElementById('existingImagesWrap');
-    const existingImages = document.getElementById('existingImages');
-
-    const listContainer = document.getElementById('listContainer');
-    const listSearch = document.getElementById('listSearch');
-
+    let campuses = [];
+    let blocks = [];
     let classrooms = [];
+    let settings = {};
+    let currentTab = 'campuses';
+    let modalType = null;
     let editingId = null;
-    let existingImageItems = []; // { url, path? }
+    let currentImageObject = null;
+    let currentImages = [];
 
     function showStatus(el, text, type='success') {
       el.textContent = text;
@@ -223,251 +304,485 @@
       el.textContent = '';
       el.className = 'status';
     }
-
-    function resetForm() {
-      editingId = null;
-      formTitle.textContent = 'Yeni Derslik';
-      code.value = '';
-      capacity.value = '';
-      campus.value = '';
-      building.value = '';
-      floor.value = '';
-      type.value = '';
-      features.value = '';
-      description.value = '';
-      images.value = '';
-      existingImageItems = [];
-      existingImages.innerHTML = '';
-      existingImagesWrap.classList.add('hidden');
-      deleteBtn.classList.add('hidden');
-      clearStatus(formStatus);
+    function escapeHtml(str='') {
+      return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
     }
 
-    function renderExistingImages() {
-      if (!existingImageItems.length) {
-        existingImagesWrap.classList.add('hidden');
-        existingImages.innerHTML = '';
-        return;
+    function setActiveTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tab));
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      $(tab + 'Panel').classList.add('active');
+    }
+
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => setActiveTab(btn.dataset.tab));
+    });
+
+    async function uploadFile(path, file) {
+      const storageRef = ref(storage, path);
+      await uploadBytes(storageRef, file);
+      const url = await getDownloadURL(storageRef);
+      return { url, path };
+    }
+
+    async function deleteImageIfPossible(obj) {
+      if (obj && obj.path) {
+        try { await deleteObject(ref(storage, obj.path)); } catch(e) {}
       }
-      existingImagesWrap.classList.remove('hidden');
-      existingImages.innerHTML = existingImageItems.map((item, index) => `
-        <div style="position:relative;display:inline-block">
-          <img src="${item.url}" alt="görsel ${index + 1}">
-          <button type="button" data-index="${index}" style="position:absolute;top:-6px;right:-6px;width:22px;height:22px;border:none;border-radius:999px;background:#fee4e2;color:#b42318;font-weight:800;cursor:pointer">×</button>
+    }
+
+    function previewSingle(targetId, obj) {
+      const wrap = $(targetId);
+      wrap.innerHTML = obj ? `<div class="img-box"><img src="${obj.url}" alt=""></div>` : '';
+    }
+
+    function previewMultiple(targetId, list) {
+      const wrap = $(targetId);
+      wrap.innerHTML = list.map((img, i) => `
+        <div class="img-box">
+          <img src="${img.url}" alt="">
+          <button type="button" data-i="${i}">×</button>
         </div>
       `).join('');
-
-      existingImages.querySelectorAll('button').forEach(btn => {
+      wrap.querySelectorAll('button').forEach(btn => {
         btn.addEventListener('click', () => {
-          const idx = Number(btn.dataset.index);
-          existingImageItems.splice(idx, 1);
-          renderExistingImages();
+          currentImages.splice(Number(btn.dataset.i), 1);
+          previewMultiple(targetId, currentImages);
         });
       });
     }
 
-    async function uploadSelectedFiles(classroomCode) {
-      const files = Array.from(images.files || []);
-      const uploaded = [];
+    function resetModal() {
+      editingId = null;
+      currentImageObject = null;
+      currentImages = [];
+      clearStatus($('modalStatus'));
+      $('deleteEntityBtn').classList.add('hidden');
+      ['campusForm','blockForm','classroomForm'].forEach(id => $(id).classList.add('hidden'));
+      ['campusImagePreview','blockImagePreview','classroomImagePreview'].forEach(id => $(id).innerHTML = '');
+      ['campusName','blockName','blockFloorCount','classroomCode','classroomCapacity','classroomFloor','classroomType','classroomFeatures'].forEach(id => { if ($(id)) $(id).value = ''; });
+      ['campusImage','blockImage','classroomImages'].forEach(id => { if ($(id)) $(id).value = ''; });
+    }
 
-      for (const file of files) {
-        const safeName = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
-        const path = `classrooms/${classroomCode}/${safeName}`;
-        const storageRef = ref(storage, path);
-        await uploadBytes(storageRef, file);
-        const url = await getDownloadURL(storageRef);
-        uploaded.push({ url, path });
+    function openModal(type, data=null) {
+      resetModal();
+      modalType = type;
+      $('entityModal').classList.add('active');
+      $('deleteEntityBtn').classList.toggle('hidden', !data);
+
+      if (type === 'campus') {
+        $('modalTitle').textContent = data ? 'Kampüs Düzenle' : 'Yeni Kampüs';
+        $('campusForm').classList.remove('hidden');
+        if (data) {
+          editingId = data.id;
+          $('campusName').value = data.name || '';
+          currentImageObject = data.imageObject || (data.imageUrl ? { url: data.imageUrl } : null);
+          previewSingle('campusImagePreview', currentImageObject);
+        }
       }
 
-      return uploaded;
+      if (type === 'block') {
+        fillCampusSelect('blockCampusId');
+        $('modalTitle').textContent = data ? 'Blok Düzenle' : 'Yeni Blok';
+        $('blockForm').classList.remove('hidden');
+        if (data) {
+          editingId = data.id;
+          $('blockName').value = data.name || '';
+          $('blockCampusId').value = data.campusId || '';
+          $('blockFloorCount').value = data.floorCount || 0;
+          currentImageObject = data.imageObject || (data.imageUrl ? { url: data.imageUrl } : null);
+          previewSingle('blockImagePreview', currentImageObject);
+        }
+      }
+
+      if (type === 'classroom') {
+        fillCampusSelect('classroomCampusId');
+        fillBlockSelect('classroomBlockId', data?.campusId || $('classroomCampusId').value);
+        $('modalTitle').textContent = data ? 'Sınıf Düzenle' : 'Yeni Sınıf';
+        $('classroomForm').classList.remove('hidden');
+        if (data) {
+          editingId = data.id;
+          $('classroomCode').value = data.code || '';
+          $('classroomCapacity').value = data.capacity || 0;
+          $('classroomCampusId').value = data.campusId || '';
+          fillBlockSelect('classroomBlockId', data.campusId);
+          $('classroomBlockId').value = data.blockId || '';
+          $('classroomFloor').value = data.floor || '';
+          $('classroomType').value = data.type || '';
+          $('classroomFeatures').value = (data.features || []).join(', ');
+          currentImages = Array.isArray(data.imageObjects) ? [...data.imageObjects] : Array.isArray(data.images) ? data.images.map(url => ({ url })) : [];
+          previewMultiple('classroomImagePreview', currentImages);
+        }
+      }
     }
 
-    function getFormData() {
-      return {
-        code: code.value.trim(),
-        capacity: Number(capacity.value || 0),
-        campus: campus.value.trim(),
-        building: building.value.trim(),
-        floor: floor.value.trim(),
-        type: type.value.trim(),
-        description: description.value.trim(),
-        features: features.value.split(',').map(x => x.trim()).filter(Boolean)
+    function closeModal() {
+      $('entityModal').classList.remove('active');
+    }
+
+    $('closeModal').addEventListener('click', closeModal);
+    $('entityModal').addEventListener('click', e => { if (e.target === $('entityModal')) closeModal(); });
+
+    function fillCampusSelect(selectId) {
+      $(selectId).innerHTML = campuses.map(c => `<option value="${c.id}">${escapeHtml(c.name || '')}</option>`).join('');
+    }
+
+    function fillBlockSelect(selectId, campusId) {
+      const filtered = blocks.filter(b => !campusId || b.campusId === campusId);
+      $(selectId).innerHTML = filtered.map(b => `<option value="${b.id}">${escapeHtml(b.name || '')}</option>`).join('');
+    }
+
+    $('classroomCampusId').addEventListener('change', () => fillBlockSelect('classroomBlockId', $('classroomCampusId').value));
+
+    $('campusImage').addEventListener('change', async e => {
+      const file = e.target.files?.[0];
+      if (file) {
+        currentImageObject = { url: URL.createObjectURL(file), file };
+        previewSingle('campusImagePreview', currentImageObject);
+      }
+    });
+
+    $('blockImage').addEventListener('change', async e => {
+      const file = e.target.files?.[0];
+      if (file) {
+        currentImageObject = { url: URL.createObjectURL(file), file };
+        previewSingle('blockImagePreview', currentImageObject);
+      }
+    });
+
+    $('classroomImages').addEventListener('change', e => {
+      const files = Array.from(e.target.files || []);
+      for (const file of files) currentImages.push({ url: URL.createObjectURL(file), file });
+      previewMultiple('classroomImagePreview', currentImages);
+    });
+
+    async function loadAll() {
+      const [campusSnap, blockSnap, classroomSnap] = await Promise.all([
+        getDocs(query(collection(db, 'campuses'), orderBy('name'))),
+        getDocs(query(collection(db, 'blocks'), orderBy('name'))),
+        getDocs(query(collection(db, 'classrooms'), orderBy('code')))
+      ]);
+      campuses = campusSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      blocks = blockSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      classrooms = classroomSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+      try {
+        const setSnap = await getDoc(doc(db, 'settings', 'site'));
+        settings = setSnap.exists() ? setSnap.data() : {};
+      } catch (e) { settings = {}; }
+
+      renderCounts();
+      renderCampuses();
+      renderBlocks();
+      renderClassrooms();
+      fillSettings();
+      $('brandTitle').textContent = settings.title || 'Kampüs Rehberi';
+      $('brandSubtitle').textContent = settings.subtitle || 'Sınıf Görselleri';
+    }
+
+    function renderCounts() {
+      $('campusCount').textContent = campuses.length;
+      $('blockCount').textContent = blocks.length;
+      $('classroomCount').textContent = classrooms.length;
+    }
+
+    function campusBlockCount(campusId) {
+      return blocks.filter(b => b.campusId === campusId).length;
+    }
+
+    function blockClassCount(blockId) {
+      return classrooms.filter(c => c.blockId === blockId).length;
+    }
+
+    function renderCampuses() {
+      const list = $('campusList');
+      if (!campuses.length) {
+        list.innerHTML = `<div class="empty">Henüz kampüs eklenmemiş.</div>`;
+        return;
+      }
+      list.innerHTML = campuses.map(c => `
+        <article class="item">
+          <div class="item-left">
+            ${c.imageUrl ? `<img class="thumb" src="${c.imageUrl}" alt="">` : `<div class="thumb placeholder">🏫</div>`}
+            <div class="item-body">
+              <h3 class="item-title">${escapeHtml(c.name || '')}</h3>
+              <div class="item-meta">${campusBlockCount(c.id)} blok</div>
+            </div>
+          </div>
+          <div class="item-actions">
+            <button class="icon-btn edit" data-type="campus" data-id="${c.id}">✎</button>
+            <button class="icon-btn delete" data-del-type="campus" data-id="${c.id}">🗑</button>
+          </div>
+        </article>
+      `).join('');
+      wireListActions();
+    }
+
+    function renderBlocks() {
+      const list = $('blockList');
+      if (!blocks.length) {
+        list.innerHTML = `<div class="empty">Henüz blok eklenmemiş.</div>`;
+        return;
+      }
+      list.innerHTML = blocks.map(b => `
+        <article class="item">
+          <div class="item-left">
+            ${b.imageUrl ? `<img class="thumb" src="${b.imageUrl}" alt="">` : `<div class="thumb placeholder">🏢</div>`}
+            <div class="item-body">
+              <h3 class="item-title">${escapeHtml(b.name || '')}</h3>
+              <div class="item-meta">${escapeHtml(b.campusName || '-')} • ${blockClassCount(b.id)} sınıf • ${Number(b.floorCount || 0)} kat</div>
+            </div>
+          </div>
+          <div class="item-actions">
+            <button class="icon-btn edit" data-type="block" data-id="${b.id}">✎</button>
+            <button class="icon-btn delete" data-del-type="block" data-id="${b.id}">🗑</button>
+          </div>
+        </article>
+      `).join('');
+      wireListActions();
+    }
+
+    function renderClassrooms() {
+      const q = $('classroomSearch').value.trim().toLowerCase();
+      const filtered = classrooms.filter(c => {
+        const text = `${c.code || ''} ${c.blockName || ''} ${c.floor || ''} ${c.campusName || ''}`.toLowerCase();
+        return text.includes(q);
+      });
+
+      const list = $('classroomList');
+      if (!filtered.length) {
+        list.innerHTML = `<div class="empty">Kayıt bulunamadı.</div>`;
+        return;
+      }
+      list.innerHTML = filtered.map(c => `
+        <article class="item">
+          <div class="item-left">
+            ${c.images?.[0] ? `<img class="thumb" src="${c.images[0]}" alt="">` : `<div class="thumb placeholder">🪑</div>`}
+            <div class="item-body">
+              <h3 class="item-title">${escapeHtml(c.code || '')}</h3>
+              <div class="item-meta">${escapeHtml(c.blockName || '-')} • ${escapeHtml(c.floor || '-')} • ${Number(c.capacity || 0)} kişi</div>
+            </div>
+          </div>
+          <div class="item-actions">
+            <button class="icon-btn edit" data-type="classroom" data-id="${c.id}">✎</button>
+            <button class="icon-btn delete" data-del-type="classroom" data-id="${c.id}">🗑</button>
+          </div>
+        </article>
+      `).join('');
+      wireListActions();
+    }
+
+    function wireListActions() {
+      document.querySelectorAll('[data-type]').forEach(btn => {
+        btn.onclick = () => {
+          const type = btn.dataset.type;
+          const id = btn.dataset.id;
+          if (type === 'campus') openModal('campus', campuses.find(x => x.id === id));
+          if (type === 'block') openModal('block', blocks.find(x => x.id === id));
+          if (type === 'classroom') openModal('classroom', classrooms.find(x => x.id === id));
+        };
+      });
+      document.querySelectorAll('[data-del-type]').forEach(btn => {
+        btn.onclick = () => handleDelete(btn.dataset.delType, btn.dataset.id);
+      });
+    }
+
+    async function handleDelete(type, id) {
+      if (type === 'campus') {
+        if (blocks.some(b => b.campusId === id)) { alert('Önce bu kampüse bağlı blokları silin.'); return; }
+        const item = campuses.find(x => x.id === id);
+        if (!confirm('Kampüs silinsin mi?')) return;
+        await deleteImageIfPossible(item.imageObject);
+        await deleteDoc(doc(db, 'campuses', id));
+      }
+      if (type === 'block') {
+        if (classrooms.some(c => c.blockId === id)) { alert('Önce bu bloğa bağlı sınıfları silin.'); return; }
+        const item = blocks.find(x => x.id === id);
+        if (!confirm('Blok silinsin mi?')) return;
+        await deleteImageIfPossible(item.imageObject);
+        await deleteDoc(doc(db, 'blocks', id));
+      }
+      if (type === 'classroom') {
+        const item = classrooms.find(x => x.id === id);
+        if (!confirm('Sınıf silinsin mi?')) return;
+        for (const img of (item.imageObjects || [])) await deleteImageIfPossible(img);
+        await deleteDoc(doc(db, 'classrooms', id));
+      }
+      await loadAll();
+    }
+
+    async function saveCampus() {
+      const name = $('campusName').value.trim();
+      if (!name) return showStatus($('modalStatus'), 'Kampüs adı zorunlu.', 'error');
+
+      let imageObject = currentImageObject && !currentImageObject.file ? currentImageObject : null;
+      if (currentImageObject?.file) {
+        imageObject = await uploadFile(`campuses/${Date.now()}-${currentImageObject.file.name}`, currentImageObject.file);
+      }
+
+      const payload = { name, imageUrl: imageObject?.url || '', imageObject, updatedAt: serverTimestamp() };
+      if (editingId) {
+        const old = campuses.find(x => x.id === editingId);
+        if (currentImageObject?.file && old?.imageObject?.path) await deleteImageIfPossible(old.imageObject);
+        await updateDoc(doc(db, 'campuses', editingId), payload);
+      } else {
+        payload.createdAt = serverTimestamp();
+        await addDoc(collection(db, 'campuses'), payload);
+      }
+    }
+
+    async function saveBlock() {
+      const name = $('blockName').value.trim();
+      const campusId = $('blockCampusId').value;
+      const campus = campuses.find(c => c.id === campusId);
+      if (!name || !campusId) return showStatus($('modalStatus'), 'Blok adı ve kampüs zorunlu.', 'error');
+
+      let imageObject = currentImageObject && !currentImageObject.file ? currentImageObject : null;
+      if (currentImageObject?.file) {
+        imageObject = await uploadFile(`blocks/${Date.now()}-${currentImageObject.file.name}`, currentImageObject.file);
+      }
+
+      const payload = {
+        name,
+        campusId,
+        campusName: campus?.name || '',
+        floorCount: Number($('blockFloorCount').value || 0),
+        imageUrl: imageObject?.url || '',
+        imageObject,
+        updatedAt: serverTimestamp()
       };
-    }
 
-    function validateForm(data) {
-      if (!data.code) return 'Derslik kodu zorunlu.';
-      if (!data.campus) return 'Kampüs alanı zorunlu.';
-      if (!data.building) return 'Bina alanı zorunlu.';
-      if (!data.floor) return 'Kat alanı zorunlu.';
-      return '';
+      if (editingId) {
+        const old = blocks.find(x => x.id === editingId);
+        if (currentImageObject?.file && old?.imageObject?.path) await deleteImageIfPossible(old.imageObject);
+        await updateDoc(doc(db, 'blocks', editingId), payload);
+      } else {
+        payload.createdAt = serverTimestamp();
+        await addDoc(collection(db, 'blocks'), payload);
+      }
     }
 
     async function saveClassroom() {
-      clearStatus(formStatus);
-      const data = getFormData();
-      const error = validateForm(data);
-      if (error) {
-        showStatus(formStatus, error, 'error');
-        return;
-      }
+      const code = $('classroomCode').value.trim();
+      const campusId = $('classroomCampusId').value;
+      const blockId = $('classroomBlockId').value;
+      const campus = campuses.find(c => c.id === campusId);
+      const block = blocks.find(b => b.id === blockId);
+      if (!code || !campusId || !blockId) return showStatus($('modalStatus'), 'Sınıf kodu, kampüs ve blok zorunlu.', 'error');
 
-      saveBtn.disabled = true;
-      saveBtn.textContent = 'Kaydediliyor...';
-
-      try {
-        const uploaded = await uploadSelectedFiles(data.code);
-        const finalImages = [...existingImageItems, ...uploaded];
-
-        const payload = {
-          ...data,
-          images: finalImages.map(x => x.url),
-          imageObjects: finalImages,
-          updatedAt: serverTimestamp()
-        };
-
-        if (editingId) {
-          await updateDoc(doc(db, 'classrooms', editingId), payload);
-          showStatus(formStatus, 'Derslik güncellendi.');
+      const uploaded = [];
+      for (const img of currentImages) {
+        if (img.file) {
+          uploaded.push(await uploadFile(`classrooms/${code}/${Date.now()}-${img.file.name}`, img.file));
         } else {
-          payload.createdAt = serverTimestamp();
-          await addDoc(collection(db, 'classrooms'), payload);
-          showStatus(formStatus, 'Yeni derslik eklendi.');
+          uploaded.push(img);
         }
+      }
 
-        resetForm();
-        await loadClassrooms();
-      } catch (err) {
-        console.error(err);
-        showStatus(formStatus, 'Kayıt sırasında hata oluştu. Firebase yapılandırmasını ve kuralları kontrol edin.', 'error');
-      } finally {
-        saveBtn.disabled = false;
-        saveBtn.textContent = 'Kaydet';
+      const payload = {
+        code,
+        capacity: Number($('classroomCapacity').value || 0),
+        campusId,
+        campusName: campus?.name || '',
+        blockId,
+        blockName: block?.name || '',
+        floor: $('classroomFloor').value.trim(),
+        type: $('classroomType').value.trim(),
+        features: $('classroomFeatures').value.split(',').map(x => x.trim()).filter(Boolean),
+        images: uploaded.map(x => x.url),
+        imageObjects: uploaded,
+        updatedAt: serverTimestamp()
+      };
+
+      if (editingId) {
+        const old = classrooms.find(x => x.id === editingId);
+        const keptPaths = new Set(uploaded.map(x => x.path).filter(Boolean));
+        for (const img of (old.imageObjects || [])) {
+          if (img.path && !keptPaths.has(img.path)) await deleteImageIfPossible(img);
+        }
+        await updateDoc(doc(db, 'classrooms', editingId), payload);
+      } else {
+        payload.createdAt = serverTimestamp();
+        await addDoc(collection(db, 'classrooms'), payload);
       }
     }
 
-    async function editClassroom(id) {
-      clearStatus(formStatus);
-      const snap = await getDoc(doc(db, 'classrooms', id));
-      if (!snap.exists()) return;
-
-      const item = snap.data();
-      editingId = id;
-      formTitle.textContent = `${item.code || '-'} düzenleniyor`;
-      code.value = item.code || '';
-      capacity.value = item.capacity || '';
-      campus.value = item.campus || '';
-      building.value = item.building || '';
-      floor.value = item.floor || '';
-      type.value = item.type || '';
-      description.value = item.description || '';
-      features.value = Array.isArray(item.features) ? item.features.join(', ') : '';
-      existingImageItems = Array.isArray(item.imageObjects)
-        ? item.imageObjects
-        : Array.isArray(item.images) ? item.images.map(url => ({ url })) : [];
-      renderExistingImages();
-      deleteBtn.classList.remove('hidden');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    async function removeClassroom() {
-      if (!editingId) return;
-      const ok = confirm('Bu derslik kaydı silinsin mi?');
-      if (!ok) return;
-
-      try {
-        const snap = await getDoc(doc(db, 'classrooms', editingId));
-        if (snap.exists()) {
-          const item = snap.data();
-          const imageObjects = Array.isArray(item.imageObjects) ? item.imageObjects : [];
-          for (const image of imageObjects) {
-            if (image.path) {
-              try {
-                await deleteObject(ref(storage, image.path));
-              } catch (e) {
-                console.warn('Görsel silinemedi:', e);
-              }
-            }
-          }
-        }
-
-        await deleteDoc(doc(db, 'classrooms', editingId));
-        resetForm();
-        await loadClassrooms();
-      } catch (err) {
-        console.error(err);
-        showStatus(formStatus, 'Silme sırasında hata oluştu.', 'error');
+    async function saveSettings() {
+      clearStatus($('settingsStatus'));
+      const title = $('settingTitle').value.trim();
+      const subtitle = $('settingSubtitle').value.trim();
+      let logoObject = settings.logoObject || null;
+      const file = $('settingLogo').files?.[0];
+      if (file) {
+        if (logoObject?.path) await deleteImageIfPossible(logoObject);
+        logoObject = await uploadFile(`settings/${Date.now()}-${file.name}`, file);
       }
+      await setDoc(doc(db, 'settings', 'site'), {
+        title, subtitle,
+        logoUrl: logoObject?.url || '',
+        logoObject: logoObject || null,
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+      showStatus($('settingsStatus'), 'Ayarlar kaydedildi.');
+      await loadAll();
     }
 
-    function renderList() {
-      const q = listSearch.value.trim().toLowerCase();
-      const items = classrooms.filter(item => {
-        const target = `${item.code || ''} ${item.campus || ''} ${item.building || ''} ${item.floor || ''}`.toLowerCase();
-        return target.includes(q);
-      });
-
-      listContainer.innerHTML = items.map(item => `
-        <article class="list-item" data-id="${item.id}">
-          <div>
-            <h3 class="list-title">${item.code || '-'}</h3>
-            <div class="list-meta">
-              ${item.campus || '-'} › ${item.building || '-'}<br>
-              ${item.floor || '-'} · ${item.capacity || 0} kişi · ${item.type || '-'}
-            </div>
-            <div class="pill-row">
-              ${(item.features || []).map(feature => `<span class="pill">${feature}</span>`).join('')}
-            </div>
-            <div class="thumbs">
-              ${(item.images || []).slice(0, 4).map(url => `<img src="${url}" alt="${item.code || 'Derslik'}">`).join('')}
-            </div>
-          </div>
-          <div><button class="btn-secondary" type="button">Düzenle</button></div>
-        </article>
-      `).join('') || '<div style="color:#667085">Kayıt bulunamadı.</div>';
-
-      listContainer.querySelectorAll('.list-item').forEach(node => {
-        node.addEventListener('click', () => editClassroom(node.dataset.id));
-      });
+    function fillSettings() {
+      $('settingTitle').value = settings.title || 'Kampüs Rehberi';
+      $('settingSubtitle').value = settings.subtitle || 'Sınıf Görselleri';
+      $('settingLogoPreview').innerHTML = settings.logoUrl ? `<div class="img-box"><img src="${settings.logoUrl}" alt=""></div>` : '';
     }
 
-    async function loadClassrooms() {
-      const snap = await getDocs(query(collection(db, 'classrooms'), orderBy('code')));
-      classrooms = snap.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
-      renderList();
-    }
+    $('saveSettingsBtn').addEventListener('click', saveSettings);
+    $('classroomSearch').addEventListener('input', renderClassrooms);
 
-    loginBtn.addEventListener('click', async () => {
-      clearStatus(authStatus);
+    $('newCampusBtn').addEventListener('click', () => openModal('campus'));
+    $('newBlockBtn').addEventListener('click', () => openModal('block'));
+    $('newClassroomBtn').addEventListener('click', () => openModal('classroom'));
+
+    $('saveEntityBtn').addEventListener('click', async () => {
+      clearStatus($('modalStatus'));
       try {
-        await signInWithEmailAndPassword(auth, loginEmail.value.trim(), loginPassword.value);
-      } catch (err) {
-        console.error(err);
-        showStatus(authStatus, 'Giriş başarısız. E-posta, şifre veya Auth ayarlarını kontrol edin.', 'error');
+        if (modalType === 'campus') await saveCampus();
+        if (modalType === 'block') await saveBlock();
+        if (modalType === 'classroom') await saveClassroom();
+        closeModal();
+        await loadAll();
+      } catch (e) {
+        console.error(e);
+        showStatus($('modalStatus'), 'Kayıt sırasında hata oluştu. Firebase yapılandırmasını ve kuralları kontrol edin.', 'error');
       }
     });
 
-    logoutBtn.addEventListener('click', async () => {
-      await signOut(auth);
+    $('deleteEntityBtn').addEventListener('click', async () => {
+      if (!editingId || !modalType) return;
+      await handleDelete(modalType, editingId);
+      closeModal();
     });
 
-    saveBtn.addEventListener('click', saveClassroom);
-    resetBtn.addEventListener('click', resetForm);
-    deleteBtn.addEventListener('click', removeClassroom);
-    listSearch.addEventListener('input', renderList);
+    $('loginBtn').addEventListener('click', async () => {
+      clearStatus($('authStatus'));
+      try {
+        await signInWithEmailAndPassword(auth, $('loginEmail').value.trim(), $('loginPassword').value);
+      } catch (e) {
+        console.error(e);
+        showStatus($('authStatus'), 'Giriş başarısız. E-posta/şifre veya Auth ayarlarını kontrol edin.', 'error');
+      }
+    });
+
+    $('logoutBtn').addEventListener('click', () => signOut(auth));
 
     onAuthStateChanged(auth, async user => {
       if (user) {
-        authView.classList.add('hidden');
-        adminView.classList.remove('hidden');
-        logoutBtn.classList.remove('hidden');
-        userEmail.textContent = user.email || '';
-        await loadClassrooms();
+        $('authView').classList.add('hidden');
+        $('appView').classList.remove('hidden');
+        $('logoutBtn').classList.remove('hidden');
+        await loadAll();
       } else {
-        authView.classList.remove('hidden');
-        adminView.classList.add('hidden');
-        logoutBtn.classList.add('hidden');
-        userEmail.textContent = '';
+        $('authView').classList.remove('hidden');
+        $('appView').classList.add('hidden');
+        $('logoutBtn').classList.add('hidden');
       }
     });
   </script>

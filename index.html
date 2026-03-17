@@ -55,8 +55,8 @@
       <div class="brand">
         <div class="brand-badge">🏫</div>
         <div>
-          <h1>Kampüs Rehberi</h1>
-          <p>Sınıf Görselleri</p>
+          <h1 id="siteTitle">Kampüs Rehberi</h1>
+          <p id="siteSubtitle">Sınıf Görselleri</p>
         </div>
       </div>
       <nav class="nav">
@@ -130,10 +130,8 @@
   </div>
 
   <script type="module">
-    import { app, db } from './firebase-config.js';
-    import {
-      collection, getDocs, query, orderBy
-    } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js';
+    import { db } from './firebase-config.js';
+    import { collection, getDocs, query, orderBy, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js';
 
     const campusFilter = document.getElementById('campusFilter');
     const buildingFilter = document.getElementById('buildingFilter');
@@ -164,8 +162,19 @@
       return match ? Number(match[0]) : 0;
     }
 
+    async function loadSettings() {
+      try {
+        const snap = await getDoc(doc(db, 'settings', 'site'));
+        if (snap.exists()) {
+          const s = snap.data();
+          document.getElementById('siteTitle').textContent = s.title || 'Kampüs Rehberi';
+          document.getElementById('siteSubtitle').textContent = s.subtitle || 'Sınıf Görselleri';
+        }
+      } catch (e) {}
+    }
+
     function fillCampusOptions() {
-      const campuses = ['Tüm Kampüsler', ...new Set(classrooms.map(c => c.campus).filter(Boolean))];
+      const campuses = ['Tüm Kampüsler', ...new Set(classrooms.map(c => c.campusName).filter(Boolean))];
       campusFilter.innerHTML = campuses.map((campus, index) =>
         `<option value="${index === 0 ? 'all' : campus}">${campus}</option>`
       ).join('');
@@ -174,8 +183,8 @@
     function fillBuildingOptions() {
       const selectedCampus = campusFilter.value;
       const filteredBuildings = classrooms
-        .filter(item => selectedCampus === 'all' || item.campus === selectedCampus)
-        .map(item => item.building)
+        .filter(item => selectedCampus === 'all' || item.campusName === selectedCampus)
+        .map(item => item.blockName)
         .filter(Boolean);
 
       const buildings = ['Tüm Binalar', ...new Set(filteredBuildings)];
@@ -191,13 +200,13 @@
       const sortValue = sortSelect.value;
 
       let items = classrooms.filter(item => {
-        const matchesCampus = selectedCampus === 'all' || item.campus === selectedCampus;
-        const matchesBuilding = selectedBuilding === 'all' || item.building === selectedBuilding;
+        const matchesCampus = selectedCampus === 'all' || item.campusName === selectedCampus;
+        const matchesBuilding = selectedBuilding === 'all' || item.blockName === selectedBuilding;
         const matchesSearch =
           !queryText ||
           String(item.code || '').toLowerCase().includes(queryText) ||
-          String(item.building || '').toLowerCase().includes(queryText) ||
-          String(item.campus || '').toLowerCase().includes(queryText) ||
+          String(item.blockName || '').toLowerCase().includes(queryText) ||
+          String(item.campusName || '').toLowerCase().includes(queryText) ||
           String(item.type || '').toLowerCase().includes(queryText);
         return matchesCampus && matchesBuilding && matchesSearch;
       });
@@ -218,10 +227,10 @@
     function openModal(item) {
       const images = Array.isArray(item.images) ? item.images : [];
       modalTitle.textContent = item.code || '-';
-      modalSubtitle.textContent = `${item.campus || '-'} › ${item.building || '-'}`;
+      modalSubtitle.textContent = `${item.campusName || '-'} › ${item.blockName || '-'}`;
       mainImage.src = images[0] || '';
-      detailCampus.textContent = item.campus || '-';
-      detailBuilding.textContent = item.building || '-';
+      detailCampus.textContent = item.campusName || '-';
+      detailBuilding.textContent = item.blockName || '-';
       detailFloor.textContent = item.floor || '-';
       detailCapacity.textContent = `${item.capacity || 0} kişi`;
       detailType.textContent = item.type || '-';
@@ -264,7 +273,7 @@
           <img class="card-image" src="${firstImage}" alt="${item.code || 'Derslik'} görseli" />
           <div class="card-body">
             <h3 class="card-title">${item.code || '-'}</h3>
-            <div class="card-location">${item.campus || '-'} › ${item.building || '-'}</div>
+            <div class="card-location">${item.campusName || '-'} › ${item.blockName || '-'}</div>
             <div class="card-meta">
               <span class="meta-item">📍 ${item.floor || '-'}</span>
               <span class="meta-item">👥 ${item.capacity || 0} kişi</span>
@@ -297,6 +306,7 @@
     closeModal.addEventListener('click', () => galleryModal.classList.remove('active'));
     galleryModal.addEventListener('click', e => { if (e.target === galleryModal) galleryModal.classList.remove('active'); });
 
+    await loadSettings();
     loadClassrooms();
   </script>
 </body>
