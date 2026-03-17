@@ -515,7 +515,7 @@
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `${activeItem.code || 'derslik'}-bilgili.jpg`;
+        a.download = `BAU-${activeItem.code || 'derslik'}.jpg`;
         document.body.appendChild(a);
         a.click();
         a.remove();
