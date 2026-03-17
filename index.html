@@ -5,444 +5,84 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Kampüs Rehberi</title>
   <style>
-    :root {
-      --bg: #f5f7fb;
-      --surface: #ffffff;
-      --surface-soft: #f8fafc;
-      --text: #101828;
-      --muted: #667085;
-      --border: #e4e7ec;
-      --primary: #2f6fed;
-      --primary-soft: #eaf1ff;
-      --shadow: 0 10px 30px rgba(16, 24, 40, 0.06);
-      --container: 1180px;
+    :root{
+      --bg:#f5f7fb; --surface:#fff; --muted:#667085; --text:#101828; --border:#e4e7ec;
+      --primary:#2f6fed; --primary-soft:#eaf1ff; --shadow:0 10px 30px rgba(16,24,40,.06);
     }
-
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: Inter, Arial, Helvetica, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-    }
-    a { color: inherit; text-decoration: none; }
-    .container {
-      width: min(var(--container), calc(100% - 32px));
-      margin: 0 auto;
-    }
-
-    .topbar {
-      position: sticky;
-      top: 0;
-      z-index: 20;
-      background: rgba(255,255,255,0.92);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid rgba(228, 231, 236, 0.9);
-    }
-    .topbar-inner {
-      height: 76px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-    }
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-    .brand-icon {
-      width: 48px;
-      height: 48px;
-      border-radius: 14px;
-      display: grid;
-      place-items: center;
-      background: linear-gradient(135deg, #2f6fed, #1d4ed8);
-      color: white;
-      box-shadow: 0 10px 20px rgba(47, 111, 237, 0.26);
-      flex: 0 0 auto;
-    }
-    .brand-title {
-      font-size: 30px;
-      font-weight: 800;
-      line-height: 1.05;
-      margin: 0;
-    }
-    .brand-subtitle {
-      margin-top: 2px;
-      color: var(--muted);
-      font-size: 15px;
-      font-weight: 500;
-    }
-    .nav {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-    .nav-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 12px 16px;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      background: #fff;
-      color: #344054;
-      font-size: 14px;
-      font-weight: 600;
-    }
-    .nav-link.active {
-      background: #f9fafb;
-    }
-
-    .hero {
-      padding: 52px 0 20px;
-      text-align: center;
-    }
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 16px;
-      border-radius: 999px;
-      background: var(--primary-soft);
-      color: var(--primary);
-      font-size: 14px;
-      font-weight: 700;
-      margin-bottom: 22px;
-    }
-    .hero h1 {
-      margin: 0 auto;
-      max-width: 900px;
-      font-size: clamp(38px, 5vw, 68px);
-      line-height: 1.04;
-      letter-spacing: -0.03em;
-      font-weight: 900;
-    }
-    .hero h1 .accent { color: var(--primary); }
-    .hero p {
-      max-width: 760px;
-      margin: 18px auto 0;
-      color: var(--muted);
-      font-size: clamp(18px, 2vw, 22px);
-      line-height: 1.65;
-    }
-
-    .search-panel {
-      max-width: 760px;
-      margin: 38px auto 0;
-    }
-    .filter-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-      margin-bottom: 14px;
-    }
-    .filter-row {
-      display: grid;
-      grid-template-columns: 1.6fr 0.9fr;
-      gap: 14px;
-    }
-    .control {
-      position: relative;
-    }
-    .control svg {
-      position: absolute;
-      left: 16px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: #98a2b3;
-      pointer-events: none;
-    }
-    .select, .input {
-      width: 100%;
-      height: 58px;
-      border-radius: 16px;
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,0.95);
-      outline: none;
-      font-size: 16px;
-      color: #101828;
-      box-shadow: 0 1px 2px rgba(16,24,40,0.02);
-    }
-    .select { padding: 0 18px; }
-    .input { padding: 0 18px 0 48px; }
-
-    .content { padding: 22px 0 72px; }
-    .results-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      margin-bottom: 18px;
-    }
-    .results-count {
-      color: #475467;
-      font-size: 15px;
-      font-weight: 600;
-    }
-
-    .card-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(255px, 1fr));
-      gap: 20px;
-    }
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      overflow: hidden;
-      box-shadow: var(--shadow);
-      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
-      cursor: pointer;
-    }
-    .card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 16px 32px rgba(16, 24, 40, 0.10);
-      border-color: #d0d5dd;
-    }
-    .card-image {
-      width: 100%;
-      aspect-ratio: 4 / 3;
-      object-fit: cover;
-      display: block;
-      background: #eef2f6;
-    }
-    .card-body {
-      padding: 16px 16px 18px;
-    }
-    .card-title {
-      margin: 0 0 8px;
-      font-size: 32px;
-      line-height: 1;
-      font-weight: 800;
-      letter-spacing: -0.03em;
-    }
-    .card-location {
-      font-size: 14px;
-      color: #667085;
-      margin-bottom: 10px;
-      line-height: 1.5;
-      min-height: 40px;
-    }
-    .card-meta {
-      display: flex;
-      gap: 14px;
-      flex-wrap: wrap;
-      color: #475467;
-      font-size: 14px;
-      font-weight: 600;
-    }
-    .meta-item {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .empty {
-      padding: 34px;
-      text-align: center;
-      color: #667085;
-      border: 1px dashed var(--border);
-      border-radius: 20px;
-      background: rgba(255,255,255,0.75);
-    }
-
-    .modal {
-      position: fixed;
-      inset: 0;
-      z-index: 100;
-      background: rgba(16, 24, 40, 0.65);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      backdrop-filter: blur(6px);
-    }
-    .modal.active { display: flex; }
-    .modal-box {
-      width: min(1100px, 100%);
-      background: white;
-      border-radius: 26px;
-      overflow: hidden;
-      box-shadow: 0 30px 80px rgba(0,0,0,0.28);
-    }
-    .modal-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 20px 24px;
-      border-bottom: 1px solid var(--border);
-    }
-    .modal-title-wrap h2 {
-      margin: 0;
-      font-size: 28px;
-      letter-spacing: -0.03em;
-    }
-    .modal-title-wrap p {
-      margin: 6px 0 0;
-      color: #667085;
-      font-size: 14px;
-    }
-    .close-btn {
-      width: 44px;
-      height: 44px;
-      border-radius: 14px;
-      border: 1px solid var(--border);
-      background: #fff;
-      font-size: 20px;
-      cursor: pointer;
-    }
-    .modal-content {
-      padding: 24px;
-      display: grid;
-      grid-template-columns: 1.45fr 0.95fr;
-      gap: 24px;
-    }
-    .modal-main-image {
-      width: 100%;
-      height: 520px;
-      object-fit: cover;
-      border-radius: 22px;
-      background: #eef2f6;
-      display: block;
-    }
-    .thumb-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      margin-top: 12px;
-    }
-    .thumb-grid img {
-      width: 100%;
-      height: 92px;
-      object-fit: cover;
-      border-radius: 14px;
-      border: 2px solid transparent;
-      cursor: pointer;
-      background: #eef2f6;
-    }
-    .thumb-grid img.active { border-color: var(--primary); }
-
-    .detail-panel {
-      background: var(--surface-soft);
-      border: 1px solid var(--border);
-      border-radius: 22px;
-      padding: 22px;
-    }
-    .detail-grid {
-      display: grid;
-      gap: 14px;
-      margin-bottom: 18px;
-    }
-    .detail-item {
-      border-bottom: 1px solid #e9edf3;
-      padding-bottom: 12px;
-    }
-    .detail-label {
-      color: #667085;
-      font-size: 13px;
-      margin-bottom: 4px;
-      font-weight: 600;
-    }
-    .detail-value {
-      color: #101828;
-      font-size: 16px;
-      font-weight: 700;
-    }
-    .feature-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 10px;
-    }
-    .feature-badge {
-      padding: 9px 12px;
-      border-radius: 999px;
-      background: white;
-      border: 1px solid var(--border);
-      color: #344054;
-      font-size: 13px;
-      font-weight: 700;
-    }
-
-    @media (max-width: 980px) {
-      .modal-content { grid-template-columns: 1fr; }
-      .modal-main-image { height: 380px; }
-    }
-
-    @media (max-width: 760px) {
-      .topbar-inner {
-        height: auto;
-        padding: 14px 0;
-        align-items: flex-start;
-        flex-direction: column;
-      }
-      .brand-title { font-size: 24px; }
-      .hero { padding-top: 34px; }
-      .filter-grid, .filter-row { grid-template-columns: 1fr; }
-      .card-title { font-size: 26px; }
-      .modal-header, .modal-content { padding: 18px; }
-      .modal-main-image { height: 280px; }
-      .thumb-grid { grid-template-columns: repeat(2, 1fr); }
-    }
+    *{box-sizing:border-box} body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--text)}
+    .container{width:min(1180px,calc(100% - 32px));margin:0 auto}
+    .topbar{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
+    .topbar-inner{height:74px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .brand{display:flex;align-items:center;gap:12px}.brand-badge{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,#2f6fed,#1d4ed8);color:#fff;display:grid;place-items:center;box-shadow:0 10px 20px rgba(47,111,237,.25)}
+    .brand h1{margin:0;font-size:28px;font-weight:800}.brand p{margin:2px 0 0;color:var(--muted);font-size:14px}
+    .nav a{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border:1px solid var(--border);border-radius:14px;background:#fff;color:#344054;text-decoration:none;font-size:14px;font-weight:600}
+    .hero{padding:48px 0 20px;text-align:center}
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:999px;background:var(--primary-soft);color:var(--primary);font-size:14px;font-weight:700}
+    .hero h2{margin:18px auto 0;max-width:900px;font-size:clamp(38px,5vw,64px);line-height:1.04;letter-spacing:-.03em}
+    .hero h2 span{color:var(--primary)} .hero p{max-width:760px;margin:16px auto 0;color:var(--muted);font-size:20px;line-height:1.6}
+    .filters{max-width:780px;margin:36px auto 0}
+    .row2,.rowSearch{display:grid;gap:14px}.row2{grid-template-columns:1fr 1fr;margin-bottom:14px}.rowSearch{grid-template-columns:1.5fr .8fr}
+    .control{position:relative}.control svg{position:absolute;left:16px;top:50%;transform:translateY(-50%);color:#98a2b3}
+    select,input{width:100%;height:58px;border:1px solid var(--border);border-radius:16px;background:#fff;outline:none;font-size:16px}
+    select{padding:0 16px} input{padding:0 16px 0 46px}
+    .content{padding:22px 0 72px}.results{margin-bottom:16px;color:#475467;font-size:15px;font-weight:600}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:20px}
+    .card{background:#fff;border:1px solid var(--border);border-radius:20px;overflow:hidden;box-shadow:var(--shadow);cursor:pointer;transition:.18s ease}
+    .card:hover{transform:translateY(-4px);box-shadow:0 16px 32px rgba(16,24,40,.1)}
+    .card img{width:100%;aspect-ratio:4/3;object-fit:cover;background:#eef2f6;display:block}
+    .card-body{padding:16px}.card-title{margin:0 0 8px;font-size:30px;line-height:1;font-weight:800;letter-spacing:-.03em}
+    .card-location{font-size:14px;color:#667085;min-height:40px;line-height:1.5}.card-meta{display:flex;gap:14px;flex-wrap:wrap;color:#475467;font-size:14px;font-weight:600;margin-top:10px}
+    .meta-item{display:inline-flex;align-items:center;gap:6px}
+    .empty,.loading{padding:34px;text-align:center;color:#667085;border:1px dashed var(--border);border-radius:20px;background:rgba(255,255,255,.8)}
+    .modal{position:fixed;inset:0;z-index:30;background:rgba(16,24,40,.65);display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(6px)}
+    .modal.active{display:flex}.modal-box{width:min(1100px,100%);background:#fff;border-radius:26px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.28)}
+    .modal-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:20px 24px;border-bottom:1px solid var(--border)}
+    .close-btn{width:44px;height:44px;border-radius:14px;border:1px solid var(--border);background:#fff;font-size:20px;cursor:pointer}
+    .modal-content{padding:24px;display:grid;grid-template-columns:1.45fr .95fr;gap:24px}
+    .modal-main-image{width:100%;height:520px;object-fit:cover;border-radius:22px;background:#eef2f6}
+    .thumb-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+    .thumb-grid img{width:100%;height:92px;object-fit:cover;border-radius:14px;border:2px solid transparent;cursor:pointer}.thumb-grid img.active{border-color:var(--primary)}
+    .detail-panel{background:#f8fafc;border:1px solid var(--border);border-radius:22px;padding:22px}.detail-item{border-bottom:1px solid #e9edf3;padding-bottom:12px;margin-bottom:12px}
+    .detail-item:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}.detail-label{color:#667085;font-size:13px;margin-bottom:4px;font-weight:600}.detail-value{font-size:16px;font-weight:700}
+    .features{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.features span{padding:9px 12px;border-radius:999px;background:#fff;border:1px solid var(--border);font-size:13px;font-weight:700}
+    @media (max-width:980px){.modal-content{grid-template-columns:1fr}.modal-main-image{height:380px}}
+    @media (max-width:760px){.topbar-inner{height:auto;padding:14px 0;align-items:flex-start;flex-direction:column}.row2,.rowSearch{grid-template-columns:1fr}.hero h2{font-size:42px}.modal-main-image{height:280px}.thumb-grid{grid-template-columns:repeat(2,1fr)}}
   </style>
 </head>
 <body>
   <header class="topbar">
     <div class="container topbar-inner">
       <div class="brand">
-        <div class="brand-icon" aria-hidden="true">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4 21V7a2 2 0 0 1 2-2h8"></path>
-            <path d="M14 3v4a2 2 0 0 0 2 2h4"></path>
-            <path d="M18 21V13"></path>
-            <path d="M8 11h4"></path>
-            <path d="M8 15h8"></path>
-            <path d="M8 19h8"></path>
-            <path d="M14 3l6 6"></path>
-          </svg>
-        </div>
+        <div class="brand-badge">🏫</div>
         <div>
-          <h1 class="brand-title">Kampüs Rehberi</h1>
-          <div class="brand-subtitle">Sınıf Görselleri</div>
+          <h1>Kampüs Rehberi</h1>
+          <p>Sınıf Görselleri</p>
         </div>
       </div>
-
       <nav class="nav">
-        <a class="nav-link active" href="#">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5 9.5V21h14V9.5"></path></svg>
-          Ana Sayfa
-        </a>
-        <a class="nav-link" href="#">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 8a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 8 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 8c.36.23.78.36 1.21.36H21a2 2 0 1 1 0 4h-.09c-.43 0-.85.13-1.21.36Z"></path></svg>
-          Yönetim
-        </a>
+        <a href="./index.html">Ana Sayfa</a>
+        <a href="./admin.html">Yönetim</a>
       </nav>
     </div>
   </header>
 
   <section class="hero">
     <div class="container">
-      <div class="pill">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 0 1 16 0Z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-        Kampüs Rehberi
-      </div>
-      <h1>Sınıf Görsellerine <span class="accent">Kolayca Ulaşın</span></h1>
+      <div class="pill">📍 Kampüs Rehberi</div>
+      <h2>Sınıf Görsellerine <span>Kolayca Ulaşın</span></h2>
       <p>Kampüsteki tüm sınıfları görsellerle keşfedin. Filtreleyerek aradığınız sınıfı hızla bulun.</p>
 
-      <div class="search-panel">
-        <div class="filter-grid">
-          <select id="campusFilter" class="select"></select>
-          <select id="buildingFilter" class="select"></select>
+      <div class="filters">
+        <div class="row2">
+          <select id="campusFilter"><option value="all">Tüm Kampüsler</option></select>
+          <select id="buildingFilter"><option value="all">Tüm Binalar</option></select>
         </div>
-        <div class="filter-row">
+        <div class="rowSearch">
           <div class="control">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
-            <input id="searchInput" class="input" type="text" placeholder="Sınıf adı ile ara..." />
+            <input id="searchInput" type="text" placeholder="Sınıf adı ile ara..." />
           </div>
-          <select id="sortSelect" class="select">
+          <select id="sortSelect">
             <option value="name-asc">Ada göre (A→Z)</option>
             <option value="name-desc">Ada göre (Z→A)</option>
             <option value="capacity-desc">Kapasite (çoktan aza)</option>
@@ -456,10 +96,9 @@
 
   <main class="content">
     <div class="container">
-      <div class="results-header">
-        <div class="results-count"><span id="resultCount">0</span> sınıf bulundu</div>
-      </div>
-      <div id="cardGrid" class="card-grid"></div>
+      <div class="results"><span id="resultCount">0</span> sınıf bulundu</div>
+      <div id="loadingState" class="loading">Veriler yükleniyor...</div>
+      <div id="cardGrid" class="grid" style="display:none;"></div>
       <div id="emptyState" class="empty" style="display:none;">Filtreye uygun sınıf bulunamadı.</div>
     </div>
   </main>
@@ -467,9 +106,9 @@
   <div id="galleryModal" class="modal">
     <div class="modal-box">
       <div class="modal-header">
-        <div class="modal-title-wrap">
-          <h2 id="modalTitle">B201</h2>
-          <p id="modalSubtitle">İSTANBUL-BEŞİKTAŞ › B Blok (Beşiktaş)</p>
+        <div>
+          <div style="font-size:28px;font-weight:800;letter-spacing:-.03em" id="modalTitle"></div>
+          <div style="margin-top:6px;color:#667085;font-size:14px" id="modalSubtitle"></div>
         </div>
         <button id="closeModal" class="close-btn">✕</button>
       </div>
@@ -479,112 +118,22 @@
           <div id="thumbGrid" class="thumb-grid"></div>
         </div>
         <aside class="detail-panel">
-          <div class="detail-grid">
-            <div class="detail-item">
-              <div class="detail-label">Kampüs</div>
-              <div class="detail-value" id="detailCampus"></div>
-            </div>
-            <div class="detail-item">
-              <div class="detail-label">Bina</div>
-              <div class="detail-value" id="detailBuilding"></div>
-            </div>
-            <div class="detail-item">
-              <div class="detail-label">Kat</div>
-              <div class="detail-value" id="detailFloor"></div>
-            </div>
-            <div class="detail-item">
-              <div class="detail-label">Kapasite</div>
-              <div class="detail-value" id="detailCapacity"></div>
-            </div>
-            <div class="detail-item" style="border-bottom:none; padding-bottom:0;">
-              <div class="detail-label">Özellikler</div>
-              <div id="featureList" class="feature-list"></div>
-            </div>
-          </div>
+          <div class="detail-item"><div class="detail-label">Kampüs</div><div class="detail-value" id="detailCampus"></div></div>
+          <div class="detail-item"><div class="detail-label">Bina</div><div class="detail-value" id="detailBuilding"></div></div>
+          <div class="detail-item"><div class="detail-label">Kat</div><div class="detail-value" id="detailFloor"></div></div>
+          <div class="detail-item"><div class="detail-label">Kapasite</div><div class="detail-value" id="detailCapacity"></div></div>
+          <div class="detail-item"><div class="detail-label">Tür</div><div class="detail-value" id="detailType"></div></div>
+          <div class="detail-item"><div class="detail-label">Özellikler</div><div class="features" id="featureList"></div></div>
         </aside>
       </div>
     </div>
   </div>
 
-  <script>
-    const classrooms = [
-      {
-        id: 1,
-        code: 'B201',
-        campus: 'İSTANBUL-BEŞİKTAŞ',
-        building: 'B Blok (Beşiktaş)',
-        floor: '2.Kat',
-        capacity: 152,
-        features: ['Projeksiyon', 'Sabit Sıra', 'Amfi Düzeni'],
-        images: [
-          'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1200&q=80',
-          'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1200&q=80'
-        ]
-      },
-      {
-        id: 2,
-        code: 'B203',
-        campus: 'İSTANBUL-BEŞİKTAŞ',
-        building: 'B Blok (Beşiktaş)',
-        floor: '2.Kat',
-        capacity: 47,
-        features: ['Projeksiyon', 'Hareketli Sıra', 'Klima'],
-        images: [
-          'https://images.unsplash.com/photo-1498243691581-b145c3f54a5a?auto=format&fit=crop&w=1200&q=80',
-          'https://images.unsplash.com/photo-1497366412874-3415097a27e7?auto=format&fit=crop&w=1200&q=80'
-        ]
-      },
-      {
-        id: 3,
-        code: 'B204',
-        campus: 'İSTANBUL-BEŞİKTAŞ',
-        building: 'B Blok (Beşiktaş)',
-        floor: '2.Kat',
-        capacity: 32,
-        features: ['Seminer Düzeni', 'Projeksiyon', 'Klima'],
-        images: [
-          'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1200&q=80',
-          'https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=1200&q=80'
-        ]
-      },
-      {
-        id: 4,
-        code: 'B301',
-        campus: 'İSTANBUL-BEŞİKTAŞ',
-        building: 'B Blok (Beşiktaş)',
-        floor: '3.Kat',
-        capacity: 160,
-        features: ['Amfi', 'Ses Sistemi', 'Projeksiyon'],
-        images: [
-          'https://images.unsplash.com/photo-1513258496099-48168024aec0?auto=format&fit=crop&w=1200&q=80',
-          'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1200&q=80'
-        ]
-      },
-      {
-        id: 5,
-        code: 'A101',
-        campus: 'İSTANBUL-BEŞİKTAŞ',
-        building: 'A Blok (Beşiktaş)',
-        floor: '1.Kat',
-        capacity: 35,
-        features: ['Akıllı Tahta', 'Projeksiyon', 'Klima'],
-        images: [
-          'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=1200&q=80'
-        ]
-      },
-      {
-        id: 6,
-        code: 'K105',
-        campus: 'İSTANBUL-KUZEY',
-        building: 'Lab Binası',
-        floor: '1.Kat',
-        capacity: 28,
-        features: ['Bilgisayar Lab', 'Projeksiyon'],
-        images: [
-          'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80'
-        ]
-      }
-    ];
+  <script type="module">
+    import { app, db } from './firebase-config.js';
+    import {
+      collection, getDocs, query, orderBy
+    } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js';
 
     const campusFilter = document.getElementById('campusFilter');
     const buildingFilter = document.getElementById('buildingFilter');
@@ -593,6 +142,7 @@
     const cardGrid = document.getElementById('cardGrid');
     const resultCount = document.getElementById('resultCount');
     const emptyState = document.getElementById('emptyState');
+    const loadingState = document.getElementById('loadingState');
 
     const galleryModal = document.getElementById('galleryModal');
     const closeModal = document.getElementById('closeModal');
@@ -604,15 +154,18 @@
     const detailBuilding = document.getElementById('detailBuilding');
     const detailFloor = document.getElementById('detailFloor');
     const detailCapacity = document.getElementById('detailCapacity');
+    const detailType = document.getElementById('detailType');
     const featureList = document.getElementById('featureList');
 
+    let classrooms = [];
+
     function floorNumber(text) {
-      const match = String(text).match(/\d+/);
+      const match = String(text || '').match(/\d+/);
       return match ? Number(match[0]) : 0;
     }
 
     function fillCampusOptions() {
-      const campuses = ['Tüm Kampüsler', ...new Set(classrooms.map(c => c.campus))];
+      const campuses = ['Tüm Kampüsler', ...new Set(classrooms.map(c => c.campus).filter(Boolean))];
       campusFilter.innerHTML = campuses.map((campus, index) =>
         `<option value="${index === 0 ? 'all' : campus}">${campus}</option>`
       ).join('');
@@ -622,7 +175,8 @@
       const selectedCampus = campusFilter.value;
       const filteredBuildings = classrooms
         .filter(item => selectedCampus === 'all' || item.campus === selectedCampus)
-        .map(item => item.building);
+        .map(item => item.building)
+        .filter(Boolean);
 
       const buildings = ['Tüm Binalar', ...new Set(filteredBuildings)];
       buildingFilter.innerHTML = buildings.map((building, index) =>
@@ -633,79 +187,48 @@
     function getFilteredClassrooms() {
       const selectedCampus = campusFilter.value;
       const selectedBuilding = buildingFilter.value;
-      const query = searchInput.value.trim().toLowerCase();
+      const queryText = searchInput.value.trim().toLowerCase();
       const sortValue = sortSelect.value;
 
       let items = classrooms.filter(item => {
         const matchesCampus = selectedCampus === 'all' || item.campus === selectedCampus;
         const matchesBuilding = selectedBuilding === 'all' || item.building === selectedBuilding;
-        const matchesSearch = !query || item.code.toLowerCase().includes(query) || item.building.toLowerCase().includes(query);
+        const matchesSearch =
+          !queryText ||
+          String(item.code || '').toLowerCase().includes(queryText) ||
+          String(item.building || '').toLowerCase().includes(queryText) ||
+          String(item.campus || '').toLowerCase().includes(queryText) ||
+          String(item.type || '').toLowerCase().includes(queryText);
         return matchesCampus && matchesBuilding && matchesSearch;
       });
 
       items.sort((a, b) => {
         switch (sortValue) {
-          case 'name-desc': return b.code.localeCompare(a.code, 'tr');
-          case 'capacity-desc': return b.capacity - a.capacity;
-          case 'capacity-asc': return a.capacity - b.capacity;
+          case 'name-desc': return String(b.code || '').localeCompare(String(a.code || ''), 'tr');
+          case 'capacity-desc': return Number(b.capacity || 0) - Number(a.capacity || 0);
+          case 'capacity-asc': return Number(a.capacity || 0) - Number(b.capacity || 0);
           case 'floor-asc': return floorNumber(a.floor) - floorNumber(b.floor);
-          case 'name-asc':
-          default: return a.code.localeCompare(b.code, 'tr');
+          default: return String(a.code || '').localeCompare(String(b.code || ''), 'tr');
         }
       });
 
       return items;
     }
 
-    function renderCards() {
-      const items = getFilteredClassrooms();
-      resultCount.textContent = items.length;
-      cardGrid.innerHTML = '';
-
-      if (!items.length) {
-        emptyState.style.display = 'block';
-        return;
-      }
-
-      emptyState.style.display = 'none';
-
-      items.forEach(item => {
-        const card = document.createElement('article');
-        card.className = 'card';
-        card.innerHTML = `
-          <img class="card-image" src="${item.images[0]}" alt="${item.code} görseli" />
-          <div class="card-body">
-            <h3 class="card-title">${item.code}</h3>
-            <div class="card-location">${item.campus} › ${item.building}</div>
-            <div class="card-meta">
-              <span class="meta-item">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 0 1 16 0Z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                ${item.floor}
-              </span>
-              <span class="meta-item">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                ${item.capacity} kişi
-              </span>
-            </div>
-          </div>
-        `;
-        card.addEventListener('click', () => openModal(item));
-        cardGrid.appendChild(card);
-      });
-    }
-
     function openModal(item) {
-      modalTitle.textContent = item.code;
-      modalSubtitle.textContent = `${item.campus} › ${item.building}`;
-      mainImage.src = item.images[0];
-      detailCampus.textContent = item.campus;
-      detailBuilding.textContent = item.building;
-      detailFloor.textContent = item.floor;
-      detailCapacity.textContent = `${item.capacity} kişi`;
-      featureList.innerHTML = item.features.map(feature => `<span class="feature-badge">${feature}</span>`).join('');
+      const images = Array.isArray(item.images) ? item.images : [];
+      modalTitle.textContent = item.code || '-';
+      modalSubtitle.textContent = `${item.campus || '-'} › ${item.building || '-'}`;
+      mainImage.src = images[0] || '';
+      detailCampus.textContent = item.campus || '-';
+      detailBuilding.textContent = item.building || '-';
+      detailFloor.textContent = item.floor || '-';
+      detailCapacity.textContent = `${item.capacity || 0} kişi`;
+      detailType.textContent = item.type || '-';
+      featureList.innerHTML = (item.features || []).map(feature => `<span>${feature}</span>`).join('') || '<span>Tanım yok</span>';
 
-      thumbGrid.innerHTML = item.images.map((image, index) => `
-        <img src="${image}" alt="${item.code} küçük görsel ${index + 1}" class="${index === 0 ? 'active' : ''}" data-src="${image}" />
+      thumbGrid.innerHTML = images.map((image, index) => `
+        <img src="${image}" alt="${item.code || 'Derslik'} küçük görsel ${index + 1}" class="${index === 0 ? 'active' : ''}" data-src="${image}" />
       `).join('');
 
       thumbGrid.querySelectorAll('img').forEach(img => {
@@ -719,25 +242,62 @@
       galleryModal.classList.add('active');
     }
 
-    function closeGallery() {
-      galleryModal.classList.remove('active');
+    function renderCards() {
+      const items = getFilteredClassrooms();
+      resultCount.textContent = items.length;
+      cardGrid.innerHTML = '';
+      loadingState.style.display = 'none';
+      cardGrid.style.display = 'grid';
+
+      if (!items.length) {
+        emptyState.style.display = 'block';
+        return;
+      }
+
+      emptyState.style.display = 'none';
+
+      items.forEach(item => {
+        const firstImage = Array.isArray(item.images) && item.images.length ? item.images[0] : '';
+        const card = document.createElement('article');
+        card.className = 'card';
+        card.innerHTML = `
+          <img class="card-image" src="${firstImage}" alt="${item.code || 'Derslik'} görseli" />
+          <div class="card-body">
+            <h3 class="card-title">${item.code || '-'}</h3>
+            <div class="card-location">${item.campus || '-'} › ${item.building || '-'}</div>
+            <div class="card-meta">
+              <span class="meta-item">📍 ${item.floor || '-'}</span>
+              <span class="meta-item">👥 ${item.capacity || 0} kişi</span>
+            </div>
+          </div>
+        `;
+        card.addEventListener('click', () => openModal(item));
+        cardGrid.appendChild(card);
+      });
     }
 
-    campusFilter.addEventListener('change', () => {
-      fillBuildingOptions();
-      renderCards();
-    });
+    async function loadClassrooms() {
+      loadingState.style.display = 'block';
+      try {
+        const snap = await getDocs(query(collection(db, 'classrooms'), orderBy('code')));
+        classrooms = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        fillCampusOptions();
+        fillBuildingOptions();
+        renderCards();
+      } catch (error) {
+        loadingState.textContent = 'Veriler yüklenemedi. Firebase yapılandırmasını ve Firestore kurallarını kontrol edin.';
+        console.error(error);
+      }
+    }
+
+    campusFilter.addEventListener('change', () => { fillBuildingOptions(); renderCards(); });
     buildingFilter.addEventListener('change', renderCards);
     searchInput.addEventListener('input', renderCards);
     sortSelect.addEventListener('change', renderCards);
-    closeModal.addEventListener('click', closeGallery);
-    galleryModal.addEventListener('click', e => {
-      if (e.target === galleryModal) closeGallery();
-    });
+    closeModal.addEventListener('click', () => galleryModal.classList.remove('active'));
+    galleryModal.addEventListener('click', e => { if (e.target === galleryModal) galleryModal.classList.remove('active'); });
 
-    fillCampusOptions();
-    fillBuildingOptions();
-    renderCards();
+    loadClassrooms();
   </script>
 </body>
 </html>
