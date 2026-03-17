@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Kampüs Rehberi</title>
+  <link rel="icon" type="image/png" href="./logo.png" />
+  <title>Bahçeşehir Üniversitesi Derslikleri</title>
   <style>
     :root{
       --bg:#f5f7fb; --surface:#fff; --muted:#667085; --text:#101828; --border:#e4e7ec;
@@ -23,6 +24,7 @@
       min-height:74px;display:flex;align-items:center;justify-content:space-between;gap:12px
     }
     .brand{display:flex;align-items:center;gap:12px}
+    .brand-logo{width:44px;height:44px;object-fit:contain;display:block}
     .brand-badge{
       width:44px;height:44px;border-radius:14px;
       background:linear-gradient(135deg,#2f6fed,#1d4ed8);
@@ -167,10 +169,10 @@
   <header class="topbar">
     <div class="container topbar-inner">
       <div class="brand">
-        <div class="brand-badge">🏫</div>
+        <img class="brand-logo" src="./logo.png" alt="Bahçeşehir Üniversitesi logosu" />
         <div>
-          <h1 id="siteTitle">Kampüs Rehberi</h1>
-          <p id="siteSubtitle">Sınıf Görselleri</p>
+          <h1 id="siteTitle">Bahçeşehir Üniversitesi Derslikleri</h1>
+          <p id="siteSubtitle">Derslik Görselleri</p>
         </div>
       </div>
       <nav class="nav">
@@ -182,7 +184,7 @@
 
   <section class="hero">
     <div class="container">
-      <div class="pill">📍 Kampüs Rehberi</div>
+      <div class="pill">📍 Bahçeşehir Üniversitesi</div>
       <h2>Sınıf Görsellerine <span>Kolayca Ulaşın</span></h2>
       <p>Kampüsteki tüm sınıfları görsellerle keşfedin. Filtreleyerek aradığınız sınıfı hızla bulun.</p>
 
@@ -271,8 +273,8 @@
         const snap = await getDoc(doc(db, 'settings', 'site'));
         if (snap.exists()) {
           const s = snap.data();
-          document.getElementById('siteTitle').textContent = s.title || 'Kampüs Rehberi';
-          document.getElementById('siteSubtitle').textContent = s.subtitle || 'Sınıf Görselleri';
+          document.getElementById('siteTitle').textContent = s.title || 'Bahçeşehir Üniversitesi Derslikleri';
+          document.getElementById('siteSubtitle').textContent = s.subtitle || 'Derslik Görselleri';
         }
       } catch (e) {
         console.warn(e);
@@ -460,15 +462,27 @@
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, outputWidth, outputHeight);
 
-      ctx.fillStyle = 'rgba(255,255,255,0.16)';
-      ctx.fillRect(48, 48, 180, 56);
-      ctx.strokeStyle = 'rgba(255,255,255,0.28)';
-      ctx.lineWidth = 2;
-      ctx.strokeRect(48, 48, 180, 56);
+      // logo_gorsel.png dosyasını sol üstte düzgün boyutlandırılmış şekilde yerleştir
+      try {
+        const logo = new Image();
+        await new Promise((resolve, reject) => {
+          logo.onload = resolve;
+          logo.onerror = reject;
+          logo.src = './logo_gorsel.png';
+        });
 
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '700 28px Arial';
-      ctx.fillText('Kampüs Rehberi', 72, 84);
+        const maxLogoWidth = 150;
+        const maxLogoHeight = 120;
+        const logoScale = Math.min(maxLogoWidth / logo.width, maxLogoHeight / logo.height);
+        const logoWidth = logo.width * logoScale;
+        const logoHeight = logo.height * logoScale;
+
+        ctx.fillStyle = 'rgba(255,255,255,0.10)';
+        ctx.fillRect(42, 38, logoWidth + 36, logoHeight + 24);
+        ctx.drawImage(logo, 60, 50, logoWidth, logoHeight);
+      } catch (e) {
+        // logo dosyası yoksa sessizce devam et
+      }
 
       ctx.fillStyle = '#ffffff';
       ctx.font = '800 54px Arial';
