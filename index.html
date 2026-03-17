@@ -471,15 +471,19 @@
           logo.src = './logo_gorsel.png';
         });
 
-        const maxLogoWidth = 150;
-        const maxLogoHeight = 120;
-        const logoScale = Math.min(maxLogoWidth / logo.width, maxLogoHeight / logo.height);
+        const maxLogoWidth = 320;
+        const maxLogoHeight = 90;
+        const logoScale = Math.min(
+          maxLogoWidth / logo.width,
+          maxLogoHeight / logo.height
+        );
         const logoWidth = logo.width * logoScale;
         const logoHeight = logo.height * logoScale;
 
-        ctx.fillStyle = 'rgba(255,255,255,0.10)';
-        ctx.fillRect(42, 38, logoWidth + 36, logoHeight + 24);
+        ctx.shadowColor = 'rgba(0,0,0,0.25)';
+        ctx.shadowBlur = 8;
         ctx.drawImage(logo, 60, 50, logoWidth, logoHeight);
+        ctx.shadowBlur = 0;
       } catch (e) {
         // logo dosyası yoksa sessizce devam et
       }
