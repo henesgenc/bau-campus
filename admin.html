@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Yönetim Paneli</title>
+  <link rel="icon" type="image/png" href="./logo.png" />
+  <title>Bahçeşehir Üniversitesi Derslikleri - Yönetim Paneli</title>
   <style>
     :root{
       --bg:#f5f7fb; --surface:#fff; --surface-soft:#f8fafc; --muted:#667085; --text:#101828;
@@ -13,7 +14,7 @@
     .container{width:min(1220px,calc(100% - 32px));margin:0 auto}
     .topbar{background:#fff;border-bottom:1px solid var(--border)}
     .topbar-inner{height:74px;display:flex;align-items:center;justify-content:space-between;gap:12px}
-    .brand{display:flex;align-items:center;gap:12px}.brand-badge{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,#2f6fed,#1d4ed8);color:#fff;display:grid;place-items:center;box-shadow:0 10px 20px rgba(47,111,237,.25)}
+    .brand{display:flex;align-items:center;gap:12px}.brand-logo{width:44px;height:44px;object-fit:contain;display:block}.brand-badge{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,#2f6fed,#1d4ed8);color:#fff;display:grid;place-items:center;box-shadow:0 10px 20px rgba(47,111,237,.25)}
     .brand h1{margin:0;font-size:28px;font-weight:800}.brand p{margin:2px 0 0;color:var(--muted);font-size:14px}
     .nav a{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border:1px solid var(--border);border-radius:14px;background:#fff;color:#344054;text-decoration:none;font-size:14px;font-weight:600}
     .header{padding:28px 0 16px}.header h2{margin:0 0 16px;font-size:32px;letter-spacing:-.03em}
@@ -71,10 +72,10 @@
   <header class="topbar">
     <div class="container topbar-inner">
       <div class="brand">
-        <div class="brand-badge">🏫</div>
+        <img class="brand-logo" src="./logo.png" alt="Bahçeşehir Üniversitesi logosu" />
         <div>
-          <h1 id="brandTitle">Kampüs Rehberi</h1>
-          <p id="brandSubtitle">Sınıf Görselleri</p>
+          <h1 id="brandTitle">Bahçeşehir Üniversitesi Derslikleri</h1>
+          <p id="brandSubtitle">Derslik Görselleri</p>
         </div>
       </div>
       <nav class="nav" style="display:flex;gap:10px;align-items:center">
@@ -157,11 +158,11 @@
             <div class="grid2">
               <div class="field">
                 <label>Site Başlığı</label>
-                <input id="settingTitle" type="text" placeholder="Kampüs Rehberi" />
+                <input id="settingTitle" type="text" placeholder="Bahçeşehir Üniversitesi Derslikleri" />
               </div>
               <div class="field">
                 <label>Alt Başlık</label>
-                <input id="settingSubtitle" type="text" placeholder="Sınıf Görselleri" />
+                <input id="settingSubtitle" type="text" placeholder="Derslik Görselleri" />
               </div>
             </div>
             <div class="field">
@@ -169,6 +170,17 @@
               <input id="settingLogo" type="file" accept="image/*" />
             </div>
             <div id="settingLogoPreview" class="thumbs"></div>
+            <hr style="border:none;border-top:1px solid var(--border);margin:18px 0;">
+            <div class="field">
+              <label>Derslik Türleri</label>
+              <div class="grid2">
+                <input id="newTypeName" type="text" placeholder="Örn: Amfi" />
+                <button id="addTypeBtn" class="btn btn-secondary" type="button">Tür Ekle</button>
+              </div>
+              <div id="typeStatus" class="status"></div>
+              <div id="typeList" class="list" style="margin-top:12px"></div>
+            </div>
+
             <button id="saveSettingsBtn" class="btn btn-primary">Ayarları Kaydet</button>
           </div>
         </div>
@@ -249,7 +261,7 @@
             </div>
             <div class="field">
               <label>Tür</label>
-              <input id="classroomType" type="text" placeholder="Amfi / Standart Derslik / Lab" />
+              <select id="classroomType"></select>
             </div>
           </div>
           <div class="field">
@@ -289,6 +301,7 @@
     let campuses = [];
     let blocks = [];
     let classrooms = [];
+    let classroomTypes = [];
     let settings = {};
     let currentTab = 'campuses';
     let modalType = null;
@@ -399,6 +412,7 @@
       if (type === 'classroom') {
         fillCampusSelect('classroomCampusId');
         fillBlockSelect('classroomBlockId', data?.campusId || $('classroomCampusId').value);
+        fillClassroomTypeSelect(data?.type || '');
         $('modalTitle').textContent = data ? 'Sınıf Düzenle' : 'Yeni Sınıf';
         $('classroomForm').classList.remove('hidden');
         if (data) {
@@ -458,14 +472,16 @@
     });
 
     async function loadAll() {
-      const [campusSnap, blockSnap, classroomSnap] = await Promise.all([
+      const [campusSnap, blockSnap, classroomSnap, typeSnap] = await Promise.all([
         getDocs(query(collection(db, 'campuses'), orderBy('name'))),
         getDocs(query(collection(db, 'blocks'), orderBy('name'))),
-        getDocs(query(collection(db, 'classrooms'), orderBy('code')))
+        getDocs(query(collection(db, 'classrooms'), orderBy('code'))),
+        getDocs(query(collection(db, 'classroomTypes'), orderBy('name')))
       ]);
       campuses = campusSnap.docs.map(d => ({ id: d.id, ...d.data() }));
       blocks = blockSnap.docs.map(d => ({ id: d.id, ...d.data() }));
       classrooms = classroomSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      classroomTypes = typeSnap.docs.map(d => ({ id: d.id, ...d.data() }));
 
       try {
         const setSnap = await getDoc(doc(db, 'settings', 'site'));
@@ -476,9 +492,11 @@
       renderCampuses();
       renderBlocks();
       renderClassrooms();
+      renderTypeList();
       fillSettings();
-      $('brandTitle').textContent = settings.title || 'Kampüs Rehberi';
-      $('brandSubtitle').textContent = settings.subtitle || 'Sınıf Görselleri';
+      fillClassroomTypeSelect();
+      $('brandTitle').textContent = settings.title || 'Bahçeşehir Üniversitesi Derslikleri';
+      $('brandSubtitle').textContent = settings.subtitle || 'Derslik Görselleri';
     }
 
     function renderCounts() {
@@ -671,40 +689,51 @@
       const block = blocks.find(b => b.id === blockId);
       if (!code || !campusId || !blockId) return showStatus($('modalStatus'), 'Sınıf kodu, kampüs ve blok zorunlu.', 'error');
 
-      const uploaded = [];
-      for (const img of currentImages) {
-        if (img.file) {
-          uploaded.push(await uploadFile(`classrooms/${code}/${Date.now()}-${img.file.name}`, img.file));
+      const saveBtn = $('saveEntityBtn');
+      const oldText = saveBtn.textContent;
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Kaydediliyor...';
+      showStatus($('modalStatus'), 'Kaydediliyor, lütfen bekleyin...');
+
+      try {
+        const uploaded = [];
+        for (const img of currentImages) {
+          if (img.file) {
+            uploaded.push(await uploadFile(`classrooms/${code}/${Date.now()}-${img.file.name}`, img.file));
+          } else {
+            uploaded.push(img);
+          }
+        }
+
+        const payload = {
+          code,
+          capacity: Number($('classroomCapacity').value || 0),
+          campusId,
+          campusName: campus?.name || '',
+          blockId,
+          blockName: block?.name || '',
+          floor: $('classroomFloor').value.trim(),
+          type: $('classroomType').value.trim(),
+          features: $('classroomFeatures').value.split(',').map(x => x.trim()).filter(Boolean),
+          images: uploaded.map(x => x.url),
+          imageObjects: uploaded,
+          updatedAt: serverTimestamp()
+        };
+
+        if (editingId) {
+          const old = classrooms.find(x => x.id === editingId);
+          const keptPaths = new Set(uploaded.map(x => x.path).filter(Boolean));
+          for (const img of (old.imageObjects || [])) {
+            if (img.path && !keptPaths.has(img.path)) await deleteImageIfPossible(img);
+          }
+          await updateDoc(doc(db, 'classrooms', editingId), payload);
         } else {
-          uploaded.push(img);
+          payload.createdAt = serverTimestamp();
+          await addDoc(collection(db, 'classrooms'), payload);
         }
-      }
-
-      const payload = {
-        code,
-        capacity: Number($('classroomCapacity').value || 0),
-        campusId,
-        campusName: campus?.name || '',
-        blockId,
-        blockName: block?.name || '',
-        floor: $('classroomFloor').value.trim(),
-        type: $('classroomType').value.trim(),
-        features: $('classroomFeatures').value.split(',').map(x => x.trim()).filter(Boolean),
-        images: uploaded.map(x => x.url),
-        imageObjects: uploaded,
-        updatedAt: serverTimestamp()
-      };
-
-      if (editingId) {
-        const old = classrooms.find(x => x.id === editingId);
-        const keptPaths = new Set(uploaded.map(x => x.path).filter(Boolean));
-        for (const img of (old.imageObjects || [])) {
-          if (img.path && !keptPaths.has(img.path)) await deleteImageIfPossible(img);
-        }
-        await updateDoc(doc(db, 'classrooms', editingId), payload);
-      } else {
-        payload.createdAt = serverTimestamp();
-        await addDoc(collection(db, 'classrooms'), payload);
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = oldText;
       }
     }
 
@@ -728,14 +757,92 @@
       await loadAll();
     }
 
+
+    function fillClassroomTypeSelect(selectedValue = '') {
+      const select = $('classroomType');
+      const options = classroomTypes.length
+        ? classroomTypes.map(t => `<option value="${escapeHtml(t.name || '')}">${escapeHtml(t.name || '')}</option>`).join('')
+        : '';
+      select.innerHTML = `<option value="">Tür seçin</option>${options}`;
+      if (selectedValue) select.value = selectedValue;
+    }
+
+    function renderTypeList() {
+      const list = $('typeList');
+      if (!list) return;
+      if (!classroomTypes.length) {
+        list.innerHTML = '<div class="empty">Henüz derslik türü eklenmemiş.</div>';
+        return;
+      }
+      list.innerHTML = classroomTypes.map(t => `
+        <article class="item" style="min-height:auto">
+          <div class="item-left">
+            <div class="item-body" style="padding:16px 0">
+              <h3 class="item-title" style="font-size:16px;margin:0">${escapeHtml(t.name || '')}</h3>
+            </div>
+          </div>
+          <div class="item-actions">
+            <button class="icon-btn delete" data-type-id="${t.id}" title="Sil">🗑</button>
+          </div>
+        </article>
+      `).join('');
+
+      list.querySelectorAll('[data-type-id]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = btn.dataset.typeId;
+          const item = classroomTypes.find(x => x.id === id);
+          if (!item) return;
+          const used = classrooms.some(c => (c.type || '') === (item.name || ''));
+          if (used) {
+            showStatus($('typeStatus'), 'Bu tür kullanıldığı için silinemez.', 'error');
+            return;
+          }
+          if (!confirm('Derslik türü silinsin mi?')) return;
+          await deleteDoc(doc(db, 'classroomTypes', id));
+          await loadAll();
+          showStatus($('typeStatus'), 'Derslik türü silindi.');
+        });
+      });
+    }
+
     function fillSettings() {
-      $('settingTitle').value = settings.title || 'Kampüs Rehberi';
-      $('settingSubtitle').value = settings.subtitle || 'Sınıf Görselleri';
+      $('settingTitle').value = settings.title || 'Bahçeşehir Üniversitesi Derslikleri';
+      $('settingSubtitle').value = settings.subtitle || 'Derslik Görselleri';
       $('settingLogoPreview').innerHTML = settings.logoUrl ? `<div class="img-box"><img src="${settings.logoUrl}" alt=""></div>` : '';
     }
 
     $('saveSettingsBtn').addEventListener('click', saveSettings);
     $('classroomSearch').addEventListener('input', renderClassrooms);
+
+    $('addTypeBtn').addEventListener('click', async () => {
+      clearStatus($('typeStatus'));
+      const name = $('newTypeName').value.trim();
+      if (!name) return showStatus($('typeStatus'), 'Tür adı girin.', 'error');
+      const exists = classroomTypes.some(t => (t.name || '').toLowerCase() === name.toLowerCase());
+      if (exists) return showStatus($('typeStatus'), 'Bu tür zaten mevcut.', 'error');
+
+      const btn = $('addTypeBtn');
+      const oldText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = 'Ekleniyor...';
+
+      try {
+        await addDoc(collection(db, 'classroomTypes'), {
+          name,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        });
+        $('newTypeName').value = '';
+        await loadAll();
+        showStatus($('typeStatus'), 'Derslik türü eklendi.');
+      } catch (e) {
+        console.error(e);
+        showStatus($('typeStatus'), 'Tür eklenemedi.', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = oldText;
+      }
+    });
 
     $('newCampusBtn').addEventListener('click', () => openModal('campus'));
     $('newBlockBtn').addEventListener('click', () => openModal('block'));
@@ -743,15 +850,28 @@
 
     $('saveEntityBtn').addEventListener('click', async () => {
       clearStatus($('modalStatus'));
+      const btn = $('saveEntityBtn');
+      const oldText = btn.textContent;
+
       try {
+        if (modalType === 'campus' || modalType === 'block') {
+          btn.disabled = true;
+          btn.textContent = 'Kaydediliyor...';
+          showStatus($('modalStatus'), 'Kaydediliyor, lütfen bekleyin...');
+        }
+
         if (modalType === 'campus') await saveCampus();
         if (modalType === 'block') await saveBlock();
         if (modalType === 'classroom') await saveClassroom();
+
         closeModal();
         await loadAll();
       } catch (e) {
         console.error(e);
         showStatus($('modalStatus'), 'Kayıt sırasında hata oluştu. Firebase yapılandırmasını ve kuralları kontrol edin.', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = oldText;
       }
     });
 
