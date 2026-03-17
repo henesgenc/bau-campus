@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Derslik Galerisi</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --text: #172033;
+      --muted: #667085;
+      --primary: #2457f5;
+      --primary-soft: #e9efff;
+      --border: #dbe2f0;
+      --shadow: 0 10px 30px rgba(20, 31, 56, 0.08);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .container {
+      width: min(1200px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #1d4ed8, #2563eb 55%, #4f46e5);
+      color: white;
+      padding: 56px 0 34px;
+      box-shadow: var(--shadow);
+    }
+
+    .hero h1 {
+      margin: 0 0 10px;
+      font-size: clamp(28px, 4vw, 42px);
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 760px;
+      line-height: 1.6;
+      color: rgba(255,255,255,0.9);
+    }
+
+    .filters {
+      margin-top: -22px;
+      padding: 18px;
+      border-radius: var(--radius);
+      background: var(--card);
+      box-shadow: var(--shadow);
+      display: grid;
+      grid-template-columns: 1.5fr 1fr 1fr;
+      gap: 12px;
+    }
+
+    .input, .select {
+      width: 100%;
+      padding: 14px 14px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      font-size: 15px;
+      outline: none;
+      background: white;
+    }
+
+    .section {
+      padding: 28px 0 50px;
+    }
+
+    .stats {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin: 18px 0 24px;
+    }
+
+    .stat {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px 16px;
+      box-shadow: var(--shadow);
+      min-width: 140px;
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 22px;
+      margin-bottom: 4px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 18px;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 40px rgba(20, 31, 56, 0.12);
+    }
+
+    .card-image {
+      width: 100%;
+      height: 210px;
+      object-fit: cover;
+      display: block;
+      background: #eef2ff;
+    }
+
+    .card-body {
+      padding: 18px;
+    }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: start;
+    }
+
+    .card h3 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .badge {
+      background: var(--primary-soft);
+      color: var(--primary);
+      padding: 8px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    .meta {
+      margin: 12px 0 14px;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 14px;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .tag {
+      background: #f2f4f7;
+      color: #344054;
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 12px;
+    }
+
+    .btn {
+      width: 100%;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 14px;
+      background: var(--primary);
+      color: white;
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    .empty {
+      background: var(--card);
+      border: 1px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.72);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 999;
+    }
+
+    .modal.active { display: flex; }
+
+    .modal-box {
+      background: white;
+      width: min(920px, 100%);
+      border-radius: 22px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-title {
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    .close {
+      border: none;
+      background: #eef2ff;
+      color: #1d4ed8;
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 18px;
+    }
+
+    .modal-content {
+      padding: 20px;
+    }
+
+    .main-image {
+      width: 100%;
+      height: 430px;
+      object-fit: cover;
+      border-radius: 16px;
+      background: #eef2ff;
+    }
+
+    .thumbs {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .thumbs img {
+      width: 100%;
+      height: 90px;
+      object-fit: cover;
+      border-radius: 12px;
+      cursor: pointer;
+      border: 2px solid transparent;
+    }
+
+    .thumbs img.active {
+      border-color: var(--primary);
+    }
+
+    .modal-meta {
+      color: var(--muted);
+      line-height: 1.8;
+      margin-top: 16px;
+    }
+
+    @media (max-width: 820px) {
+      .filters { grid-template-columns: 1fr; }
+      .main-image { height: 280px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="container">
+      <h1>Derslik Görsel Arşivi</h1>
+      <p>
+        Kampüs, bina ve derslik bazında görselleri görüntülemek için hazırlanmış basit bir galeri sitesi.
+        Bu örnek yapı GitHub Pages'e doğrudan yüklenebilir.
+      </p>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="filters" aria-label="Filtreler">
+      <input id="searchInput" class="input" type="text" placeholder="Derslik ara... Örn: B201" />
+      <select id="campusFilter" class="select">
+        <option value="all">Tüm Kampüsler</option>
+      </select>
+      <select id="buildingFilter" class="select">
+        <option value="all">Tüm Binalar</option>
+      </select>
+    </section>
+
+    <section class="section">
+      <div class="stats">
+        <div class="stat">
+          <strong id="classroomCount">0</strong>
+          <span>Derslik</span>
+        </div>
+        <div class="stat">
+          <strong id="imageCount">0</strong>
+          <span>Toplam Görsel</span>
+        </div>
+      </div>
+
+      <div id="cardGrid" class="grid"></div>
+      <div id="emptyState" class="empty" style="display:none;">Filtreye uygun derslik bulunamadı.</div>
+    </section>
+  </main>
+
+  <div id="galleryModal" class="modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-title" id="modalTitle">Derslik</div>
+        <button class="close" id="closeModal">✕</button>
+      </div>
+      <div class="modal-content">
+        <img id="mainImage" class="main-image" src="" alt="Derslik görseli" />
+        <div id="thumbs" class="thumbs"></div>
+        <div id="modalMeta" class="modal-meta"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const classrooms = [
+      {
+        id: 1,
+        code: "B201",
+        campus: "Beşiktaş",
+        building: "A Blok",
+        floor: "2. Kat",
+        capacity: 42,
+        type: "Standart Derslik",
+        features: ["Projeksiyon", "Klima", "Akıllı Tahta"],
+        images: [
+          "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1400&q=80",
+          "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=1400&q=80",
+          "https://images.unsplash.com/photo-1498243691581-b145c3f54a5a?auto=format&fit=crop&w=1400&q=80"
+        ]
+      },
+      {
+        id: 2,
+        code: "K105",
+        campus: "Kuzey",
+        building: "B Blok",
+        floor: "1. Kat",
+        capacity: 30,
+        type: "Bilgisayar Lab",
+        features: ["Masaüstü Bilgisayar", "Projeksiyon", "Klima"],
+        images: [
+          "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1400&q=80",
+          "https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1400&q=80"
+        ]
+      },
+      {
+        id: 3,
+        code: "P301",
+        campus: "Pera",
+        building: "Merkez Bina",
+        floor: "3. Kat",
+        capacity: 78,
+        type: "Amfi",
+        features: ["Sabit Sıralar", "Ses Sistemi", "Projeksiyon"],
+        images: [
+          "https://images.unsplash.com/photo-1513258496099-48168024aec0?auto=format&fit=crop&w=1400&q=80",
+          "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1400&q=80"
+        ]
+      },
+      {
+        id: 4,
+        code: "G014",
+        campus: "Göztepe",
+        building: "C Blok",
+        floor: "Giriş Kat",
+        capacity: 24,
+        type: "Seminer Odası",
+        features: ["TV Ekranı", "Toplantı Masası", "Klima"],
+        images: [
+          "https://images.unsplash.com/photo-1497366412874-3415097a27e7?auto=format&fit=crop&w=1400&q=80",
+          "https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=1400&q=80"
+        ]
+      }
+    ];
+
+    const searchInput = document.getElementById('searchInput');
+    const campusFilter = document.getElementById('campusFilter');
+    const buildingFilter = document.getElementById('buildingFilter');
+    const cardGrid = document.getElementById('cardGrid');
+    const emptyState = document.getElementById('emptyState');
+    const classroomCount = document.getElementById('classroomCount');
+    const imageCount = document.getElementById('imageCount');
+
+    const galleryModal = document.getElementById('galleryModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const mainImage = document.getElementById('mainImage');
+    const thumbs = document.getElementById('thumbs');
+    const modalMeta = document.getElementById('modalMeta');
+    const closeModal = document.getElementById('closeModal');
+
+    function populateFilters() {
+      const campuses = [...new Set(classrooms.map(c => c.campus))].sort();
+      const buildings = [...new Set(classrooms.map(c => c.building))].sort();
+
+      campuses.forEach(campus => {
+        const option = document.createElement('option');
+        option.value = campus;
+        option.textContent = campus;
+        campusFilter.appendChild(option);
+      });
+
+      buildings.forEach(building => {
+        const option = document.createElement('option');
+        option.value = building;
+        option.textContent = building;
+        buildingFilter.appendChild(option);
+      });
+    }
+
+    function getFilteredClassrooms() {
+      const query = searchInput.value.trim().toLowerCase();
+      const selectedCampus = campusFilter.value;
+      const selectedBuilding = buildingFilter.value;
+
+      return classrooms.filter(item => {
+        const matchesSearch =
+          item.code.toLowerCase().includes(query) ||
+          item.campus.toLowerCase().includes(query) ||
+          item.building.toLowerCase().includes(query) ||
+          item.type.toLowerCase().includes(query);
+
+        const matchesCampus = selectedCampus === 'all' || item.campus === selectedCampus;
+        const matchesBuilding = selectedBuilding === 'all' || item.building === selectedBuilding;
+
+        return matchesSearch && matchesCampus && matchesBuilding;
+      });
+    }
+
+    function renderCards() {
+      const filtered = getFilteredClassrooms();
+      cardGrid.innerHTML = '';
+
+      classroomCount.textContent = filtered.length;
+      imageCount.textContent = filtered.reduce((sum, item) => sum + item.images.length, 0);
+
+      if (!filtered.length) {
+        emptyState.style.display = 'block';
+        return;
+      }
+
+      emptyState.style.display = 'none';
+
+      filtered.forEach(item => {
+        const card = document.createElement('article');
+        card.className = 'card';
+        card.innerHTML = `
+          <img class="card-image" src="${item.images[0]}" alt="${item.code} derslik görseli" />
+          <div class="card-body">
+            <div class="card-top">
+              <h3>${item.code}</h3>
+              <span class="badge">${item.capacity} Kişi</span>
+            </div>
+            <div class="meta">
+              <div><strong>Kampüs:</strong> ${item.campus}</div>
+              <div><strong>Bina:</strong> ${item.building}</div>
+              <div><strong>Kat:</strong> ${item.floor}</div>
+              <div><strong>Tür:</strong> ${item.type}</div>
+            </div>
+            <div class="tags">
+              ${item.features.map(feature => `<span class="tag">${feature}</span>`).join('')}
+            </div>
+            <button class="btn" data-id="${item.id}">Galeriyi Aç</button>
+          </div>
+        `;
+        cardGrid.appendChild(card);
+      });
+
+      document.querySelectorAll('.btn').forEach(button => {
+        button.addEventListener('click', () => {
+          const item = classrooms.find(c => c.id === Number(button.dataset.id));
+          openGallery(item);
+        });
+      });
+    }
+
+    function openGallery(item) {
+      modalTitle.textContent = `${item.code} - ${item.campus}`;
+      mainImage.src = item.images[0];
+      modalMeta.innerHTML = `
+        <div><strong>Bina:</strong> ${item.building}</div>
+        <div><strong>Kat:</strong> ${item.floor}</div>
+        <div><strong>Kapasite:</strong> ${item.capacity}</div>
+        <div><strong>Tür:</strong> ${item.type}</div>
+        <div><strong>Özellikler:</strong> ${item.features.join(', ')}</div>
+      `;
+
+      thumbs.innerHTML = item.images.map((image, index) => `
+        <img src="${image}" alt="${item.code} küçük görsel ${index + 1}" class="${index === 0 ? 'active' : ''}" data-src="${image}" />
+      `).join('');
+
+      thumbs.querySelectorAll('img').forEach(thumb => {
+        thumb.addEventListener('click', () => {
+          mainImage.src = thumb.dataset.src;
+          thumbs.querySelectorAll('img').forEach(t => t.classList.remove('active'));
+          thumb.classList.add('active');
+        });
+      });
+
+      galleryModal.classList.add('active');
+    }
+
+    function closeGallery() {
+      galleryModal.classList.remove('active');
+    }
+
+    searchInput.addEventListener('input', renderCards);
+    campusFilter.addEventListener('change', renderCards);
+    buildingFilter.addEventListener('change', renderCards);
+    closeModal.addEventListener('click', closeGallery);
+    galleryModal.addEventListener('click', (e) => {
+      if (e.target === galleryModal) closeGallery();
+    });
+
+    populateFilters();
+    renderCards();
+  </script>
+</body>
+</html>
