@@ -9,44 +9,158 @@
       --bg:#f5f7fb; --surface:#fff; --muted:#667085; --text:#101828; --border:#e4e7ec;
       --primary:#2f6fed; --primary-soft:#eaf1ff; --shadow:0 10px 30px rgba(16,24,40,.06);
     }
-    *{box-sizing:border-box} body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--text)}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--text)}
     .container{width:min(1180px,calc(100% - 32px));margin:0 auto}
-    .topbar{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
-    .topbar-inner{height:74px;display:flex;align-items:center;justify-content:space-between;gap:12px}
-    .brand{display:flex;align-items:center;gap:12px}.brand-badge{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,#2f6fed,#1d4ed8);color:#fff;display:grid;place-items:center;box-shadow:0 10px 20px rgba(47,111,237,.25)}
-    .brand h1{margin:0;font-size:28px;font-weight:800}.brand p{margin:2px 0 0;color:var(--muted);font-size:14px}
-    .nav a{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border:1px solid var(--border);border-radius:14px;background:#fff;color:#344054;text-decoration:none;font-size:14px;font-weight:600}
-    .hero{padding:48px 0 20px;text-align:center}
-    .pill{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:999px;background:var(--primary-soft);color:var(--primary);font-size:14px;font-weight:700}
-    .hero h2{margin:18px auto 0;max-width:900px;font-size:clamp(38px,5vw,64px);line-height:1.04;letter-spacing:-.03em}
-    .hero h2 span{color:var(--primary)} .hero p{max-width:760px;margin:16px auto 0;color:var(--muted);font-size:20px;line-height:1.6}
-    .filters{max-width:780px;margin:36px auto 0}
-    .row2,.rowSearch{display:grid;gap:14px}.row2{grid-template-columns:1fr 1fr;margin-bottom:14px}.rowSearch{grid-template-columns:1.5fr .8fr}
-    .control{position:relative}.control svg{position:absolute;left:16px;top:50%;transform:translateY(-50%);color:#98a2b3}
-    select,input{width:100%;height:58px;border:1px solid var(--border);border-radius:16px;background:#fff;outline:none;font-size:16px}
-    select{padding:0 16px} input{padding:0 16px 0 46px}
-    .content{padding:22px 0 72px}.results{margin-bottom:16px;color:#475467;font-size:15px;font-weight:600}
-    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:20px}
-    .card{background:#fff;border:1px solid var(--border);border-radius:20px;overflow:hidden;box-shadow:var(--shadow);cursor:pointer;transition:.18s ease}
-    .card:hover{transform:translateY(-4px);box-shadow:0 16px 32px rgba(16,24,40,.1)}
-    .card img{width:100%;aspect-ratio:4/3;object-fit:cover;background:#eef2f6;display:block}
-    .card-body{padding:16px}.card-title{margin:0 0 8px;font-size:30px;line-height:1;font-weight:800;letter-spacing:-.03em}
-    .card-location{font-size:14px;color:#667085;min-height:40px;line-height:1.5}.card-meta{display:flex;gap:14px;flex-wrap:wrap;color:#475467;font-size:14px;font-weight:600;margin-top:10px}
-    .meta-item{display:inline-flex;align-items:center;gap:6px}
-    .empty,.loading{padding:34px;text-align:center;color:#667085;border:1px dashed var(--border);border-radius:20px;background:rgba(255,255,255,.8)}
-    .modal{position:fixed;inset:0;z-index:30;background:rgba(16,24,40,.65);display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(6px)}
-    .modal.active{display:flex}.modal-box{width:min(1100px,100%);background:#fff;border-radius:26px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.28)}
-    .modal-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:20px 24px;border-bottom:1px solid var(--border)}
-    .close-btn{width:44px;height:44px;border-radius:14px;border:1px solid var(--border);background:#fff;font-size:20px;cursor:pointer}
-    .modal-content{padding:24px;display:grid;grid-template-columns:1.45fr .95fr;gap:24px}
-    .modal-main-image{width:100%;height:520px;object-fit:cover;border-radius:22px;background:#eef2f6}
-    .thumb-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
-    .thumb-grid img{width:100%;height:92px;object-fit:cover;border-radius:14px;border:2px solid transparent;cursor:pointer}.thumb-grid img.active{border-color:var(--primary)}
-    .detail-panel{background:#f8fafc;border:1px solid var(--border);border-radius:22px;padding:22px}.detail-item{border-bottom:1px solid #e9edf3;padding-bottom:12px;margin-bottom:12px}
-    .detail-item:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}.detail-label{color:#667085;font-size:13px;margin-bottom:4px;font-weight:600}.detail-value{font-size:16px;font-weight:700}
-    .features{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.features span{padding:9px 12px;border-radius:999px;background:#fff;border:1px solid var(--border);font-size:13px;font-weight:700}
-    @media (max-width:980px){.modal-content{grid-template-columns:1fr}.modal-main-image{height:380px}}
-    @media (max-width:760px){.topbar-inner{height:auto;padding:14px 0;align-items:flex-start;flex-direction:column}.row2,.rowSearch{grid-template-columns:1fr}.hero h2{font-size:42px}.modal-main-image{height:280px}.thumb-grid{grid-template-columns:repeat(2,1fr)}}
+
+    .topbar{
+      position:sticky;top:0;z-index:20;
+      background:rgba(255,255,255,.92);
+      backdrop-filter:blur(10px);
+      border-bottom:1px solid var(--border)
+    }
+    .topbar-inner{
+      min-height:74px;display:flex;align-items:center;justify-content:space-between;gap:12px
+    }
+    .brand{display:flex;align-items:center;gap:12px}
+    .brand-badge{
+      width:44px;height:44px;border-radius:14px;
+      background:linear-gradient(135deg,#2f6fed,#1d4ed8);
+      color:#fff;display:grid;place-items:center;
+      box-shadow:0 10px 20px rgba(47,111,237,.25)
+    }
+    .brand h1{margin:0;font-size:28px;font-weight:800}
+    .brand p{margin:2px 0 0;color:var(--muted);font-size:14px}
+    .nav{display:flex;gap:10px;flex-wrap:wrap}
+    .nav a{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:10px 14px;border:1px solid #edf2f7;border-radius:14px;
+      background:#f8fafc;color:#344054;text-decoration:none;font-size:14px;font-weight:600
+    }
+
+    .hero{padding:52px 0 24px;text-align:center}
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:999px;
+      background:var(--primary-soft);color:var(--primary);font-size:14px;font-weight:700
+    }
+    .hero h2{
+      margin:18px auto 0;max-width:900px;
+      font-size:clamp(36px,5vw,60px);line-height:1.05;letter-spacing:-.03em;font-weight:900
+    }
+    .hero h2 span{color:var(--primary)}
+    .hero p{
+      max-width:760px;margin:18px auto 0;color:var(--muted);
+      font-size:clamp(18px,2vw,22px);line-height:1.6
+    }
+
+    .filters-wrap{max-width:760px;margin:36px auto 0}
+    .filters-top,.filters-bottom{display:grid;gap:12px}
+    .filters-top{grid-template-columns:1fr 1fr;margin-bottom:12px}
+    .filters-bottom{grid-template-columns:1.35fr .75fr}
+    .control{position:relative}
+    .control-icon{
+      position:absolute;left:16px;top:50%;transform:translateY(-50%);
+      color:#98a2b3;font-size:18px;pointer-events:none
+    }
+    .input,.select{
+      width:100%;height:48px;border:1px solid var(--border);border-radius:14px;
+      background:#fff;color:var(--text);font-size:15px;outline:none
+    }
+    .select{padding:0 14px}
+    .input{padding:0 14px 0 44px}
+
+    .content{padding:24px 0 56px}
+    .results{margin-bottom:18px;color:#475467;font-size:15px;font-weight:600}
+    .loading,.empty{
+      padding:28px;text-align:center;color:#667085;background:#fff;
+      border:1px dashed var(--border);border-radius:20px
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(270px,270px));
+      gap:18px;
+      justify-content:start
+    }
+    .card{
+      width:270px;min-height:308px;background:#fff;border:1px solid var(--border);
+      border-radius:18px;overflow:hidden;box-shadow:var(--shadow);
+      cursor:pointer;transition:transform .18s ease, box-shadow .18s ease
+    }
+    .card:hover{
+      transform:translateY(-4px);
+      box-shadow:0 16px 40px rgba(20,31,56,.12)
+    }
+    .card img{
+      width:100%;height:210px;object-fit:cover;display:block;background:#eef2f6
+    }
+    .card-body{padding:14px 14px 16px}
+    .card-title{margin:0 0 8px;font-size:16px;font-weight:800}
+    .card-location{font-size:14px;color:#667085;line-height:1.45;min-height:38px;margin-bottom:8px}
+    .card-meta{display:flex;gap:12px;flex-wrap:wrap;color:#475467;font-size:13px}
+
+    .modal{
+      position:fixed;inset:0;z-index:60;background:rgba(16,24,40,.76);
+      display:none;align-items:center;justify-content:center;padding:20px;
+      backdrop-filter:blur(5px)
+    }
+    .modal.active{display:flex}
+    .modal-box{
+      width:min(1020px,100%);border-radius:24px;overflow:hidden;position:relative;
+      background:#0f172a;box-shadow:0 30px 80px rgba(0,0,0,.28)
+    }
+    .modal-stage{
+      position:relative;width:100%;height:min(72vh,620px);min-height:420px;background:#0f172a
+    }
+    .main-image{
+      width:100%;height:100%;object-fit:cover;display:block;background:#111827
+    }
+    .thumbs{
+      position:absolute;left:24px;top:24px;z-index:4;display:flex;gap:8px;flex-wrap:wrap;
+      max-width:calc(100% - 96px)
+    }
+    .thumbs img{
+      width:72px;height:52px;object-fit:cover;border-radius:10px;cursor:pointer;
+      border:2px solid transparent;background:rgba(255,255,255,.2);
+      box-shadow:0 8px 18px rgba(0,0,0,.18)
+    }
+    .thumbs img.active{border-color:#fff}
+    .close{
+      position:absolute;top:16px;right:16px;z-index:5;
+      width:40px;height:40px;border:none;border-radius:12px;
+      background:rgba(255,255,255,.14);color:#fff;font-size:18px;cursor:pointer;
+      backdrop-filter:blur(6px)
+    }
+    .modal-overlay{
+      position:absolute;inset:0;
+      background:linear-gradient(to top, rgba(0,0,0,.72) 0%, rgba(0,0,0,.3) 35%, rgba(0,0,0,.04) 62%, rgba(0,0,0,0) 100%);
+      display:flex;align-items:flex-end;justify-content:space-between;gap:16px;padding:24px
+    }
+    .modal-info{color:#fff;max-width:calc(100% - 170px)}
+    .modal-title{font-size:22px;font-weight:800;margin-bottom:8px}
+    .modal-meta{font-size:15px;line-height:1.6;color:rgba(255,255,255,.92)}
+    .modal-actions{display:flex;gap:10px;align-items:center}
+    .action-btn{
+      display:inline-flex;align-items:center;gap:8px;text-decoration:none;
+      padding:10px 14px;border-radius:14px;border:1px solid rgba(255,255,255,.7);
+      background:rgba(255,255,255,.08);color:#fff;font-size:14px;font-weight:700;
+      backdrop-filter:blur(6px); cursor:pointer;
+    }
+
+    @media (max-width:1100px){
+      .grid{grid-template-columns:repeat(auto-fill,minmax(250px,250px))}
+      .card{width:250px}
+    }
+    @media (max-width:820px){
+      .filters-top,.filters-bottom{grid-template-columns:1fr}
+      .grid{grid-template-columns:1fr}
+      .card{width:100%}
+      .modal-stage{height:72vh;min-height:360px}
+      .thumbs{left:16px;top:16px;max-width:calc(100% - 72px)}
+      .thumbs img{width:58px;height:42px}
+      .modal-overlay{padding:18px;flex-direction:column;align-items:flex-start}
+      .modal-info{max-width:100%}
+    }
   </style>
 </head>
 <body>
@@ -72,17 +186,17 @@
       <h2>Sınıf Görsellerine <span>Kolayca Ulaşın</span></h2>
       <p>Kampüsteki tüm sınıfları görsellerle keşfedin. Filtreleyerek aradığınız sınıfı hızla bulun.</p>
 
-      <div class="filters">
-        <div class="row2">
-          <select id="campusFilter"><option value="all">Tüm Kampüsler</option></select>
-          <select id="buildingFilter"><option value="all">Tüm Binalar</option></select>
+      <div class="filters-wrap">
+        <div class="filters-top">
+          <select id="campusFilter" class="select"><option value="all">Tüm Kampüsler</option></select>
+          <select id="buildingFilter" class="select"><option value="all">Tüm Binalar</option></select>
         </div>
-        <div class="rowSearch">
+        <div class="filters-bottom">
           <div class="control">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
-            <input id="searchInput" type="text" placeholder="Sınıf adı ile ara..." />
+            <span class="control-icon">⌕</span>
+            <input id="searchInput" class="input" type="text" placeholder="Sınıf adı ile ara..." />
           </div>
-          <select id="sortSelect">
+          <select id="sortSelect" class="select">
             <option value="name-asc">Ada göre (A→Z)</option>
             <option value="name-desc">Ada göre (Z→A)</option>
             <option value="capacity-desc">Kapasite (çoktan aza)</option>
@@ -105,26 +219,19 @@
 
   <div id="galleryModal" class="modal">
     <div class="modal-box">
-      <div class="modal-header">
-        <div>
-          <div style="font-size:28px;font-weight:800;letter-spacing:-.03em" id="modalTitle"></div>
-          <div style="margin-top:6px;color:#667085;font-size:14px" id="modalSubtitle"></div>
+      <button id="closeModal" class="close">✕</button>
+      <div id="thumbGrid" class="thumbs"></div>
+      <div class="modal-stage">
+        <img id="mainImage" class="main-image" src="" alt="Sınıf görseli" crossorigin="anonymous" />
+        <div class="modal-overlay">
+          <div class="modal-info">
+            <div id="modalTitle" class="modal-title"></div>
+            <div id="modalMeta" class="modal-meta"></div>
+          </div>
+          <div class="modal-actions">
+            <button id="downloadImage" class="action-btn" type="button">⭳ Görseli İndir</button>
+          </div>
         </div>
-        <button id="closeModal" class="close-btn">✕</button>
-      </div>
-      <div class="modal-content">
-        <div>
-          <img id="mainImage" class="modal-main-image" src="" alt="Sınıf görseli" />
-          <div id="thumbGrid" class="thumb-grid"></div>
-        </div>
-        <aside class="detail-panel">
-          <div class="detail-item"><div class="detail-label">Kampüs</div><div class="detail-value" id="detailCampus"></div></div>
-          <div class="detail-item"><div class="detail-label">Bina</div><div class="detail-value" id="detailBuilding"></div></div>
-          <div class="detail-item"><div class="detail-label">Kat</div><div class="detail-value" id="detailFloor"></div></div>
-          <div class="detail-item"><div class="detail-label">Kapasite</div><div class="detail-value" id="detailCapacity"></div></div>
-          <div class="detail-item"><div class="detail-label">Tür</div><div class="detail-value" id="detailType"></div></div>
-          <div class="detail-item"><div class="detail-label">Özellikler</div><div class="features" id="featureList"></div></div>
-        </aside>
       </div>
     </div>
   </div>
@@ -145,17 +252,14 @@
     const galleryModal = document.getElementById('galleryModal');
     const closeModal = document.getElementById('closeModal');
     const modalTitle = document.getElementById('modalTitle');
-    const modalSubtitle = document.getElementById('modalSubtitle');
+    const modalMeta = document.getElementById('modalMeta');
     const mainImage = document.getElementById('mainImage');
     const thumbGrid = document.getElementById('thumbGrid');
-    const detailCampus = document.getElementById('detailCampus');
-    const detailBuilding = document.getElementById('detailBuilding');
-    const detailFloor = document.getElementById('detailFloor');
-    const detailCapacity = document.getElementById('detailCapacity');
-    const detailType = document.getElementById('detailType');
-    const featureList = document.getElementById('featureList');
+    const downloadImage = document.getElementById('downloadImage');
 
     let classrooms = [];
+    let activeItem = null;
+    let activeImageUrl = '';
 
     function floorNumber(text) {
       const match = String(text || '').match(/\d+/);
@@ -170,7 +274,9 @@
           document.getElementById('siteTitle').textContent = s.title || 'Kampüs Rehberi';
           document.getElementById('siteSubtitle').textContent = s.subtitle || 'Sınıf Görselleri';
         }
-      } catch (e) {}
+      } catch (e) {
+        console.warn(e);
+      }
     }
 
     function fillCampusOptions() {
@@ -224,25 +330,26 @@
       return items;
     }
 
+    function setActiveImage(url) {
+      activeImageUrl = url || '';
+      mainImage.src = activeImageUrl;
+    }
+
     function openModal(item) {
       const images = Array.isArray(item.images) ? item.images : [];
+      const first = images[0] || '';
+      activeItem = item;
       modalTitle.textContent = item.code || '-';
-      modalSubtitle.textContent = `${item.campusName || '-'} › ${item.blockName || '-'}`;
-      mainImage.src = images[0] || '';
-      detailCampus.textContent = item.campusName || '-';
-      detailBuilding.textContent = item.blockName || '-';
-      detailFloor.textContent = item.floor || '-';
-      detailCapacity.textContent = `${item.capacity || 0} kişi`;
-      detailType.textContent = item.type || '-';
-      featureList.innerHTML = (item.features || []).map(feature => `<span>${feature}</span>`).join('') || '<span>Tanım yok</span>';
+      modalMeta.innerHTML = `${item.campusName || '-'} › ${item.blockName || '-'} &nbsp; 👥 ${item.capacity || 0} kişi kapasiteli &nbsp; 📍 ${item.floor || '-'}`;
+      setActiveImage(first);
 
       thumbGrid.innerHTML = images.map((image, index) => `
-        <img src="${image}" alt="${item.code || 'Derslik'} küçük görsel ${index + 1}" class="${index === 0 ? 'active' : ''}" data-src="${image}" />
+        <img src="${image}" alt="${item.code || 'Derslik'} küçük görsel ${index + 1}" class="${index === 0 ? 'active' : ''}" data-src="${image}" crossorigin="anonymous" />
       `).join('');
 
       thumbGrid.querySelectorAll('img').forEach(img => {
         img.addEventListener('click', () => {
-          mainImage.src = img.dataset.src;
+          setActiveImage(img.dataset.src);
           thumbGrid.querySelectorAll('img').forEach(t => t.classList.remove('active'));
           img.classList.add('active');
         });
@@ -270,13 +377,13 @@
         const card = document.createElement('article');
         card.className = 'card';
         card.innerHTML = `
-          <img class="card-image" src="${firstImage}" alt="${item.code || 'Derslik'} görseli" />
+          <img class="card-image" src="${firstImage}" alt="${item.code || 'Derslik'} görseli" crossorigin="anonymous" />
           <div class="card-body">
             <h3 class="card-title">${item.code || '-'}</h3>
             <div class="card-location">${item.campusName || '-'} › ${item.blockName || '-'}</div>
             <div class="card-meta">
-              <span class="meta-item">📍 ${item.floor || '-'}</span>
-              <span class="meta-item">👥 ${item.capacity || 0} kişi</span>
+              <span>📍 ${item.floor || '-'}</span>
+              <span>👥 ${item.capacity || 0} kişi</span>
             </div>
           </div>
         `;
@@ -299,12 +406,118 @@
       }
     }
 
+    function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+      const words = String(text || '').split(' ');
+      let line = '';
+      let currentY = y;
+
+      for (let n = 0; n < words.length; n++) {
+        const testLine = line + words[n] + ' ';
+        const metrics = ctx.measureText(testLine);
+        if (metrics.width > maxWidth && n > 0) {
+          ctx.fillText(line.trim(), x, currentY);
+          line = words[n] + ' ';
+          currentY += lineHeight;
+        } else {
+          line = testLine;
+        }
+      }
+      if (line.trim()) ctx.fillText(line.trim(), x, currentY);
+      return currentY;
+    }
+
+    async function generateBrandedImage(item, imageUrl) {
+      const outputWidth = 1600;
+      const outputHeight = 1000;
+      const overlayHeight = 190;
+      const canvas = document.createElement('canvas');
+      canvas.width = outputWidth;
+      canvas.height = outputHeight;
+      const ctx = canvas.getContext('2d');
+
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.referrerPolicy = 'no-referrer';
+
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+        img.src = imageUrl;
+      });
+
+      const scale = Math.max(outputWidth / img.width, outputHeight / img.height);
+      const drawWidth = img.width * scale;
+      const drawHeight = img.height * scale;
+      const dx = (outputWidth - drawWidth) / 2;
+      const dy = (outputHeight - drawHeight) / 2;
+
+      ctx.drawImage(img, dx, dy, drawWidth, drawHeight);
+
+      const gradient = ctx.createLinearGradient(0, outputHeight - overlayHeight - 120, 0, outputHeight);
+      gradient.addColorStop(0, 'rgba(0,0,0,0)');
+      gradient.addColorStop(0.35, 'rgba(0,0,0,0.28)');
+      gradient.addColorStop(1, 'rgba(0,0,0,0.82)');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, outputWidth, outputHeight);
+
+      ctx.fillStyle = 'rgba(255,255,255,0.16)';
+      ctx.fillRect(48, 48, 180, 56);
+      ctx.strokeStyle = 'rgba(255,255,255,0.28)';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(48, 48, 180, 56);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '700 28px Arial';
+      ctx.fillText('Kampüs Rehberi', 72, 84);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '800 54px Arial';
+      ctx.fillText(item.code || '-', 64, outputHeight - 96);
+
+      ctx.fillStyle = 'rgba(255,255,255,0.92)';
+      ctx.font = '400 28px Arial';
+      const metaText = `${item.campusName || '-'} › ${item.blockName || '-'}   •   ${item.capacity || 0} kişi kapasiteli   •   ${item.floor || '-'}`;
+      wrapText(ctx, metaText, 64, outputHeight - 48, outputWidth - 128, 38);
+
+      return canvas;
+    }
+
+    async function handleCanvasDownload() {
+      if (!activeItem || !activeImageUrl) return;
+
+      const originalText = downloadImage.textContent;
+      downloadImage.disabled = true;
+      downloadImage.textContent = 'Hazırlanıyor...';
+
+      try {
+        const canvas = await generateBrandedImage(activeItem, activeImageUrl);
+        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.92));
+        if (!blob) throw new Error('Blob oluşturulamadı');
+
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${activeItem.code || 'derslik'}-bilgili.jpg`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error(error);
+        alert('Görsel oluşturulamadı. Storage erişimi veya CORS ayarlarını kontrol edin.');
+      } finally {
+        downloadImage.disabled = false;
+        downloadImage.textContent = originalText;
+      }
+    }
+
     campusFilter.addEventListener('change', () => { fillBuildingOptions(); renderCards(); });
     buildingFilter.addEventListener('change', renderCards);
     searchInput.addEventListener('input', renderCards);
     sortSelect.addEventListener('change', renderCards);
     closeModal.addEventListener('click', () => galleryModal.classList.remove('active'));
     galleryModal.addEventListener('click', e => { if (e.target === galleryModal) galleryModal.classList.remove('active'); });
+    downloadImage.addEventListener('click', handleCanvasDownload);
 
     await loadSettings();
     loadClassrooms();

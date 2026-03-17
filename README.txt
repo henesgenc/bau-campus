@@ -1,28 +1,29 @@
-Bu paket, Firebase ile çalışan iki sayfalı başlangıç yapısıdır.
-
-Dosyalar:
-- index.html  → ziyaretçi sayfası
-- admin.html  → giriş yapılınca yönetim paneli
-- firebase-config.js → kendi Firebase bilgilerinizi buraya yazın
+Paket içeriği:
+- index.html
+- admin.html
+- firebase-config.js
 - firestore.rules
 - storage.rules
 
-Yönetim panelinden yapılabilenler:
-- giriş
-- yeni derslik ekleme
-- kampüs / bina / kat / tür / kapasite / özellik bilgileri girme
-- çoklu görsel yükleme
-- mevcut kaydı düzenleme
-- kaydı silme
+Bu sürümde:
+- Kampüsler sekmesi
+- Bloklar sekmesi
+- Sınıflar sekmesi
+- Ayarlar sekmesi
+- Firebase Authentication ile giriş
+- Firestore CRUD
+- Firebase Storage görsel yükleme
+- Ana sayfada sınıf listeleme
 
 Kurulum:
-1) Firebase Console'da Authentication > Sign-in method > Email/Password açın.
-2) Firestore Database oluşturun.
-3) Storage oluşturun.
-4) Bu paketteki firestore.rules ve storage.rules içeriklerini ilgili kurallara yapıştırın.
-5) firebase-config.js içine kendi proje bilgilerinizi yazın.
-6) Dosyaları GitHub Pages'e veya Firebase Hosting'e yükleyin.
+1) firebase-config.js içini kendi bilgilerinizle doldurun.
+2) Firebase Authentication > Email/Password açın.
+3) En az 1 admin kullanıcı oluşturun.
+4) Firestore kurallarına firestore.rules içeriğini yapıştırın.
+5) Storage kurallarına storage.rules içeriğini yapıştırın.
+6) Dosyaları GitHub Pages veya Firebase Hosting'e yükleyin.
 
 Not:
-- Yönetim panelinde yüklenen görseller Firebase Storage'a gider.
-- Görsel URL'leri ve diğer alanlar Firestore'da classrooms koleksiyonuna kaydedilir.
+- Kampüs silmeden önce bağlı blokları silin.
+- Blok silmeden önce bağlı sınıfları silin.
+- Sınıf düzenlerken silinen görseller Storage'dan da kaldırılır.
