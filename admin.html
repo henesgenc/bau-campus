@@ -113,6 +113,7 @@
           <button class="tab-btn active" data-tab="campuses">Kampüsler</button>
           <button class="tab-btn" data-tab="blocks">Bloklar</button>
           <button class="tab-btn" data-tab="classrooms">Sınıflar</button>
+          <button class="tab-btn" data-tab="types">Derslik Türleri</button>
           <button class="tab-btn" data-tab="settings">Ayarlar</button>
         </div>
       </section>
@@ -142,10 +143,30 @@
           <div class="toolbar-left"><span id="classroomCount">0</span> sınıf</div>
           <div class="toolbar-right">
             <input id="classroomSearch" class="search" type="text" placeholder="Sınıf adı, blok veya kat ile ara..." />
-            <button id="newClassroomBtn" class="btn btn-primary">＋ Yeni Sınıf</button>
+            <button id="newClassroomBtn" class="btn btn-primary" style="width: -webkit-fill-available;">＋ Yeni Sınıf</button>
           </div>
         </div>
         <div id="classroomList" class="list"></div>
+      </section>
+
+      <section id="typesPanel" class="panel">
+        <div class="toolbar">
+          <div class="toolbar-left"><span id="typeCount">0</span> derslik türü</div>
+        </div>
+
+        <div class="card">
+          <div class="card-body">
+            <div class="field">
+              <label>Derslik Türleri</label>
+              <div class="grid2">
+                <input id="newTypeName" type="text" placeholder="Örn: Amfi" />
+                <button id="addTypeBtn" class="btn btn-secondary" type="button">Tür Ekle</button>
+              </div>
+              <div id="typeStatus" class="status"></div>
+              <div id="typeList" class="list" style="margin-top:12px"></div>
+            </div>
+          </div>
+        </div>
       </section>
 
       <section id="settingsPanel" class="panel">
@@ -170,16 +191,6 @@
               <input id="settingLogo" type="file" accept="image/*" />
             </div>
             <div id="settingLogoPreview" class="thumbs"></div>
-            <hr style="border:none;border-top:1px solid var(--border);margin:18px 0;">
-            <div class="field">
-              <label>Derslik Türleri</label>
-              <div class="grid2">
-                <input id="newTypeName" type="text" placeholder="Örn: Amfi" />
-                <button id="addTypeBtn" class="btn btn-secondary" type="button">Tür Ekle</button>
-              </div>
-              <div id="typeStatus" class="status"></div>
-              <div id="typeList" class="list" style="margin-top:12px"></div>
-            </div>
 
             <button id="saveSettingsBtn" class="btn btn-primary">Ayarları Kaydet</button>
           </div>
@@ -503,6 +514,7 @@
       $('campusCount').textContent = campuses.length;
       $('blockCount').textContent = blocks.length;
       $('classroomCount').textContent = classrooms.length;
+      $('typeCount').textContent = classroomTypes.length;
     }
 
     function campusBlockCount(campusId) {
