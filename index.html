@@ -399,12 +399,14 @@
       try {
         const q = query(
           collection(db, 'classrooms'),
-          where('active', '==', true),
           orderBy('code')
         );
 
         const snap = await getDocs(q);
-        classrooms = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        // active alanı olmayan (undefined) veya true olanları göster
+        classrooms = snap.docs
+          .map(doc => ({ id: doc.id, ...doc.data() }))
+          .filter(c => c.active !== false);
         fillCampusOptions();
         fillBuildingOptions();
         renderCards();

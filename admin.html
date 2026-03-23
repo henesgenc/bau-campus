@@ -840,7 +840,7 @@
       btn.disabled = true;
       btn.textContent = 'İşleniyor...';
       try {
-        const inactiveClassrooms = classrooms.filter(c => c.active === false);
+        const inactiveClassrooms = classrooms.filter(c => c.active !== true);
         if (!inactiveClassrooms.length) {
           alert('Zaten tüm sınıflar aktif durumda.');
           return;
