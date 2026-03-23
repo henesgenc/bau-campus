@@ -459,41 +459,6 @@
       }
     );
 
-    const sortBtn      = document.getElementById('sortBtn');
-    const sortLabel    = document.getElementById('sortLabel');
-    const sortDropdown = document.getElementById('sortDropdown');
-
-    const sortLabels = {
-      'name-asc':      'Ada göre (A→Z)',
-      'name-desc':     'Ada göre (Z→A)',
-      'capacity-desc': 'Kapasite ↓',
-      'capacity-asc':  'Kapasite ↑',
-      'floor-asc':     'Kata göre',
-    };
-
-    sortBtn.addEventListener('click', e => {
-      e.stopPropagation();
-      sortBtn.classList.toggle('open');
-      sortDropdown.classList.toggle('open');
-    });
-
-    sortDropdown.querySelectorAll('.sort-option').forEach(opt => {
-      opt.addEventListener('click', () => {
-        currentSort = opt.dataset.value;
-        sortLabel.textContent = sortLabels[currentSort];
-        sortDropdown.querySelectorAll('.sort-option').forEach(o => o.classList.remove('selected'));
-        opt.classList.add('selected');
-        sortBtn.classList.remove('open');
-        sortDropdown.classList.remove('open');
-        renderCards();
-      });
-    });
-
-    document.addEventListener('click', () => {
-      sortBtn.classList.remove('open');
-      sortDropdown.classList.remove('open');
-    });
-
     /* Sıralama dropdown */
     const sortBtn      = document.getElementById('sortBtn');
     const sortLabel    = document.getElementById('sortLabel');
