@@ -65,15 +65,6 @@
     .thumbs .img-box{position:relative}
     .thumbs img{width:86px;height:66px;object-fit:cover;border-radius:10px;border:1px solid var(--border)}
     .thumbs button{position:absolute;top:-6px;right:-6px;width:22px;height:22px;border:none;border-radius:999px;background:#fee4e2;color:#b42318;font-weight:800;cursor:pointer}
-    .thumbs .img-box{position:relative;cursor:grab}
-    .thumbs .img-box:active{cursor:grabbing}
-    .thumbs .img-box.dragging{opacity:.4;border:2px dashed var(--primary);border-radius:10px}
-    .thumbs .img-box.drag-over{border:2px solid var(--primary);border-radius:10px;background:var(--primary-soft)}
-    .thumbs .img-box .sort-handle{
-      position:absolute;bottom:2px;left:50%;transform:translateX(-50%);
-      background:rgba(0,0,0,.55);color:#fff;font-size:9px;border-radius:4px;
-      padding:1px 5px;pointer-events:none;letter-spacing:.05em;
-    }
     @media (max-width:860px){.grid2{grid-template-columns:1fr}.toolbar{flex-direction:column;align-items:stretch}.toolbar-right{flex-direction:column;align-items:stretch}.search{width:100%}.item{align-items:flex-start}.thumb{width:90px;height:72px}}
   </style>
 </head>
@@ -385,42 +376,14 @@
     function previewMultiple(targetId, list) {
       const wrap = $(targetId);
       wrap.innerHTML = list.map((img, i) => `
-        <div class="img-box" draggable="true" data-i="${i}">
+        <div class="img-box">
           <img src="${img.url}" alt="">
           <button type="button" data-i="${i}">×</button>
-          <span class="sort-handle">⠿ sürükle</span>
         </div>
       `).join('');
-
       wrap.querySelectorAll('button').forEach(btn => {
         btn.addEventListener('click', () => {
           currentImages.splice(Number(btn.dataset.i), 1);
-          previewMultiple(targetId, currentImages);
-        });
-      });
-
-      // Sürükle-bırak sıralama
-      let dragSrc = null;
-      wrap.querySelectorAll('.img-box').forEach(box => {
-        box.addEventListener('dragstart', () => {
-          dragSrc = box;
-          setTimeout(() => box.classList.add('dragging'), 0);
-        });
-        box.addEventListener('dragend', () => box.classList.remove('dragging'));
-        box.addEventListener('dragover', e => {
-          e.preventDefault();
-          wrap.querySelectorAll('.img-box').forEach(b => b.classList.remove('drag-over'));
-          box.classList.add('drag-over');
-        });
-        box.addEventListener('dragleave', () => box.classList.remove('drag-over'));
-        box.addEventListener('drop', e => {
-          e.preventDefault();
-          box.classList.remove('drag-over');
-          if (!dragSrc || dragSrc === box) return;
-          const from = Number(dragSrc.dataset.i);
-          const to   = Number(box.dataset.i);
-          const [moved] = currentImages.splice(from, 1);
-          currentImages.splice(to, 0, moved);
           previewMultiple(targetId, currentImages);
         });
       });
@@ -434,7 +397,7 @@
       $('deleteEntityBtn').classList.add('hidden');
       ['campusForm','blockForm','classroomForm'].forEach(id => $(id).classList.add('hidden'));
       ['campusImagePreview','blockImagePreview','classroomImagePreview'].forEach(id => $(id).innerHTML = '');
-      ['campusName','blockName','blockFloorCount','campusSortOrder','blockSortOrder','classroomCode','classroomCapacity','classroomFloor','classroomType','classroomFeatures'].forEach(id => { if ($(id)) $(id).value = ''; });
+      ['campusName','campusSortOrder','blockName','blockFloorCount','blockSortOrder','classroomCode','classroomCapacity','classroomFloor','classroomType','classroomFeatures'].forEach(id => { if ($(id)) $(id).value = ''; });
       ['campusImage','blockImage','classroomImages'].forEach(id => { if ($(id)) $(id).value = ''; });
     }
 
@@ -541,7 +504,6 @@
         getDocs(query(collection(db, 'classrooms'), orderBy('code'))),
         getDocs(query(collection(db, 'classroomTypes'), orderBy('name')))
       ]);
-      // sortOrder değerine göre sırala, yoksa isme göre
       campuses = campusSnap.docs.map(d => ({ id: d.id, ...d.data() }))
         .sort((a,b) => (a.sortOrder ?? 9999) - (b.sortOrder ?? 9999) || (a.name||'').localeCompare(b.name||'','tr'));
       blocks = blockSnap.docs.map(d => ({ id: d.id, ...d.data() }))
