@@ -276,6 +276,9 @@
             </div>
           </div>
           <div class="field">
+            <label><input id="classroomActive" type="checkbox" checked /> Aktif mi?</label>
+          </div>
+          <div class="field">
             <label>Özellikler</label>
             <input id="classroomFeatures" type="text" placeholder="Projeksiyon, Klima, Akıllı Tahta" />
           </div>
@@ -436,6 +439,7 @@
           $('classroomFloor').value = data.floor || '';
           $('classroomType').value = data.type || '';
           $('classroomFeatures').value = (data.features || []).join(', ');
+           $('classroomActive').checked = data.active !== false;
           currentImages = Array.isArray(data.imageObjects) ? [...data.imageObjects] : Array.isArray(data.images) ? data.images.map(url => ({ url })) : [];
           previewMultiple('classroomImagePreview', currentImages);
         }
@@ -513,7 +517,7 @@
     function renderCounts() {
       $('campusCount').textContent = campuses.length;
       $('blockCount').textContent = blocks.length;
-      $('classroomCount').textContent = classrooms.length;
+      $('classroomCount').textContent = classrooms.filter(c => c.active !== false).length;
       $('typeCount').textContent = classroomTypes.length;
     }
 
@@ -574,34 +578,35 @@
     }
 
     function renderClassrooms() {
-      const q = $('classroomSearch').value.trim().toLowerCase();
-      const filtered = classrooms.filter(c => {
-        const text = `${c.code || ''} ${c.blockName || ''} ${c.floor || ''} ${c.campusName || ''}`.toLowerCase();
-        return text.includes(q);
-      });
+        const q = $('classroomSearch').value.trim().toLowerCase();
+        // Aktiflik filtresi: sadece aktif olanlar gösterilsin
+        const filtered = classrooms.filter(c => {
+          const text = `${c.code || ''} ${c.blockName || ''} ${c.floor || ''} ${c.campusName || ''}`.toLowerCase();
+          return (c.active !== false) && text.includes(q);
+        });
 
-      const list = $('classroomList');
-      if (!filtered.length) {
-        list.innerHTML = `<div class="empty">Kayıt bulunamadı.</div>`;
-        return;
-      }
-      list.innerHTML = filtered.map(c => `
-        <article class="item">
-          <div class="item-left">
-            ${c.images?.[0] ? `<img class="thumb" src="${c.images[0]}" alt="">` : `<div class="thumb placeholder">🪑</div>`}
-            <div class="item-body">
-              <h3 class="item-title">${escapeHtml(c.code || '')}</h3>
-              <div class="item-meta">${escapeHtml(c.blockName || '-')} • ${escapeHtml(c.floor || '-')} • ${Number(c.capacity || 0)} kişi</div>
+        const list = $('classroomList');
+        if (!filtered.length) {
+          list.innerHTML = `<div class="empty">Kayıt bulunamadı.</div>`;
+          return;
+        }
+        list.innerHTML = filtered.map(c => `
+          <article class="item">
+            <div class="item-left">
+              ${c.images?.[0] ? `<img class="thumb" src="${c.images[0]}" alt="">` : `<div class="thumb placeholder">🪑</div>`}
+              <div class="item-body">
+                <h3 class="item-title">${escapeHtml(c.code || '')}</h3>
+                <div class="item-meta">${escapeHtml(c.blockName || '-')} • ${escapeHtml(c.floor || '-')} • ${Number(c.capacity || 0)} kişi${c.active === false ? ' <span style=\"color:#b42318;font-weight:600\">(Pasif)</span>' : ''}</div>
+              </div>
             </div>
-          </div>
-          <div class="item-actions">
-            <button class="icon-btn edit" data-type="classroom" data-id="${c.id}">✎</button>
-            <button class="icon-btn delete" data-del-type="classroom" data-id="${c.id}">🗑</button>
-          </div>
-        </article>
-      `).join('');
-      wireListActions();
-    }
+            <div class="item-actions">
+              <button class="icon-btn edit" data-type="classroom" data-id="${c.id}">✎</button>
+              <button class="icon-btn delete" data-del-type="classroom" data-id="${c.id}">🗑</button>
+            </div>
+          </article>
+        `).join('');
+        wireListActions();
+      }
 
     function wireListActions() {
       document.querySelectorAll('[data-type]').forEach(btn => {
@@ -729,6 +734,7 @@
           features: $('classroomFeatures').value.split(',').map(x => x.trim()).filter(Boolean),
           images: uploaded.map(x => x.url),
           imageObjects: uploaded,
+            active: $('classroomActive').checked,
           updatedAt: serverTimestamp()
         };
 
