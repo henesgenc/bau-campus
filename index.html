@@ -88,6 +88,44 @@
     }
     .results-count strong{color:var(--text)}
 
+    /* ── CUSTOM DROPDOWN ── */
+    .cd-wrap{position:relative}
+    .cd-btn{
+      width:100%;height:44px;padding:0 36px 0 14px;
+      border:1px solid var(--border);border-radius:12px;
+      background:#f7f8fb url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23b0b9c8' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center;
+      color:var(--text);font-size:14px;font-family:'DM Sans',sans-serif;
+      text-align:left;cursor:pointer;outline:none;
+      transition:border-color .15s,box-shadow .15s,background .15s;
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    }
+    .cd-btn:hover{background-color:#fff;border-color:#c5ccd8}
+    .cd-btn.open{background-color:#fff;border-color:var(--primary);box-shadow:0 0 0 3px rgba(26,86,219,.1)}
+    .cd-panel{
+      position:absolute;top:calc(100% + 6px);left:0;z-index:40;
+      min-width:100%;max-width:280px;
+      background:#fff;border:1px solid var(--border);border-radius:14px;
+      box-shadow:var(--shadow-lg);
+      padding:6px;
+      opacity:0;pointer-events:none;transform:translateY(-6px);
+      transition:opacity .15s,transform .15s;
+      max-height:280px;overflow-y:auto;
+    }
+    .cd-panel.open{opacity:1;pointer-events:all;transform:translateY(0)}
+    .cd-option{
+      display:flex;align-items:center;gap:10px;
+      padding:9px 12px;border-radius:9px;
+      font-size:13.5px;font-weight:500;color:#344054;cursor:pointer;
+      transition:background .1s;white-space:nowrap;
+    }
+    .cd-option:hover{background:#f5f7fb}
+    .cd-option.selected{background:var(--primary-soft);color:var(--primary);font-weight:700}
+    .cd-option-dot{
+      width:8px;height:8px;border-radius:50%;flex-shrink:0;
+      background:var(--border);
+    }
+    .cd-option.selected .cd-option-dot{background:var(--primary)}
+
     .sort-wrap{position:relative}
     .sort-btn{
       height:44px;padding:0 14px;border-radius:12px;
@@ -257,8 +295,14 @@
   <div class="search-bar">
     <div class="container">
       <div class="search-inner">
-        <select id="campusFilter" class="select"><option value="all">Tüm Kampüsler</option></select>
-        <select id="buildingFilter" class="select"><option value="all">Tüm Binalar</option></select>
+        <div class="cd-wrap">
+          <button id="campusBtn" class="cd-btn">Tüm Kampüsler</button>
+          <div id="campusPanel" class="cd-panel"></div>
+        </div>
+        <div class="cd-wrap">
+          <button id="buildingBtn" class="cd-btn">Tüm Binalar</button>
+          <div id="buildingPanel" class="cd-panel"></div>
+        </div>
         <div class="control">
           <span class="control-icon">⌕</span>
           <input id="searchInput" class="input" type="text" placeholder="Sınıf adı ile ara..." />
@@ -313,8 +357,10 @@
     import { db } from './firebase-config.js';
     import { collection, getDocs, query, orderBy, doc, getDoc, where } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js';
     
-    const campusFilter = document.getElementById('campusFilter');
-    const buildingFilter = document.getElementById('buildingFilter');
+    const campusBtn     = document.getElementById('campusBtn');
+    const campusPanel   = document.getElementById('campusPanel');
+    const buildingBtn   = document.getElementById('buildingBtn');
+    const buildingPanel = document.getElementById('buildingPanel');
     const searchInput = document.getElementById('searchInput');
     const cardGrid = document.getElementById('cardGrid');
     const resultCount = document.getElementById('resultCount');
@@ -333,40 +379,83 @@
     let activeItem = null;
     let activeImageUrl = '';
     let currentSort = 'name-asc';
+    let selectedCampus   = 'all';
+    let selectedBuilding = 'all';
 
+    // ── Custom dropdown helper ──
+    function makeDropdown(btn, panel, onSelect) {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const isOpen = panel.classList.contains('open');
+        closeAllDropdowns();
+        if (!isOpen) { btn.classList.add('open'); panel.classList.add('open'); }
+      });
+      panel._onSelect = onSelect;
+    }
+    function closeAllDropdowns() {
+      document.querySelectorAll('.cd-btn.open').forEach(b => b.classList.remove('open'));
+      document.querySelectorAll('.cd-panel.open').forEach(p => p.classList.remove('open'));
+      sortBtn.classList.remove('open');
+      sortDropdown.classList.remove('open');
+    }
+    document.addEventListener('click', closeAllDropdowns);
+
+    function renderDropdownOptions(panel, btn, items, selectedVal) {
+      panel.innerHTML = items.map(({value, label}) => `
+        <div class="cd-option${value === selectedVal ? ' selected' : ''}" data-value="${value}">
+          <span class="cd-option-dot"></span>${label}
+        </div>
+      `).join('');
+      panel.querySelectorAll('.cd-option').forEach(opt => {
+        opt.addEventListener('click', e => {
+          e.stopPropagation();
+          panel._onSelect(opt.dataset.value, opt.textContent.trim());
+          closeAllDropdowns();
+        });
+      });
+    }
+
+    // ── Sort dropdown ──
     const sortBtn      = document.getElementById('sortBtn');
     const sortLabel    = document.getElementById('sortLabel');
     const sortDropdown = document.getElementById('sortDropdown');
-
     const sortLabels = {
-      'name-asc':      'Ada göre (A→Z)',
-      'name-desc':     'Ada göre (Z→A)',
-      'capacity-desc': 'Kapasite ↓',
-      'capacity-asc':  'Kapasite ↑',
-      'floor-asc':     'Kata göre',
+      'name-asc':'Ada göre (A→Z)','name-desc':'Ada göre (Z→A)',
+      'capacity-desc':'Kapasite ↓','capacity-asc':'Kapasite ↑','floor-asc':'Kata göre',
     };
-
     sortBtn.addEventListener('click', e => {
       e.stopPropagation();
-      sortBtn.classList.toggle('open');
-      sortDropdown.classList.toggle('open');
+      const isOpen = sortDropdown.classList.contains('open');
+      closeAllDropdowns();
+      if (!isOpen) { sortBtn.classList.add('open'); sortDropdown.classList.add('open'); }
     });
-
     sortDropdown.querySelectorAll('.sort-option').forEach(opt => {
-      opt.addEventListener('click', () => {
+      opt.addEventListener('click', e => {
+        e.stopPropagation();
         currentSort = opt.dataset.value;
         sortLabel.textContent = sortLabels[currentSort];
         sortDropdown.querySelectorAll('.sort-option').forEach(o => o.classList.remove('selected'));
         opt.classList.add('selected');
-        sortBtn.classList.remove('open');
-        sortDropdown.classList.remove('open');
+        closeAllDropdowns();
         renderCards();
       });
     });
 
-    document.addEventListener('click', () => {
-      sortBtn.classList.remove('open');
-      sortDropdown.classList.remove('open');
+    // ── Campus dropdown ──
+    makeDropdown(campusBtn, campusPanel, (value, label) => {
+      selectedCampus = value;
+      campusBtn.textContent = label;
+      selectedBuilding = 'all';
+      buildingBtn.textContent = 'Tüm Binalar';
+      fillBuildingOptions();
+      renderCards();
+    });
+
+    // ── Building dropdown ──
+    makeDropdown(buildingBtn, buildingPanel, (value, label) => {
+      selectedBuilding = value;
+      buildingBtn.textContent = label;
+      renderCards();
     });
 
     function floorNumber(text) {
@@ -382,45 +471,39 @@
           document.getElementById('siteTitle').textContent = s.title || 'Bahçeşehir Üniversitesi Derslikleri';
           document.getElementById('siteSubtitle').textContent = s.subtitle || 'Derslik Görselleri';
         }
-      } catch (e) {
-        console.warn(e);
-      }
+      } catch (e) { console.warn(e); }
     }
 
     function fillCampusOptions() {
-      const campuses = ['Tüm Kampüsler', ...new Set(classrooms.map(c => c.campusName).filter(Boolean))];
-      campusFilter.innerHTML = campuses.map((campus, index) =>
-        `<option value="${index === 0 ? 'all' : campus}">${campus}</option>`
-      ).join('');
+      const campusNames = [...new Set(classrooms.map(c => c.campusName).filter(Boolean))];
+      const items = [
+        { value: 'all', label: 'Tüm Kampüsler' },
+        ...campusNames.map(n => ({ value: n, label: n }))
+      ];
+      renderDropdownOptions(campusPanel, campusBtn, items, selectedCampus);
     }
 
     function fillBuildingOptions() {
-      const selectedCampus = campusFilter.value;
-      const filteredBuildings = classrooms
-        .filter(item => selectedCampus === 'all' || item.campusName === selectedCampus)
-        .map(item => item.blockName)
-        .filter(Boolean);
-
-      const buildings = ['Tüm Binalar', ...new Set(filteredBuildings)];
-      buildingFilter.innerHTML = buildings.map((building, index) =>
-        `<option value="${index === 0 ? 'all' : building}">${building}</option>`
-      ).join('');
+      const names = [...new Set(
+        classrooms
+          .filter(c => selectedCampus === 'all' || c.campusName === selectedCampus)
+          .map(c => c.blockName).filter(Boolean)
+      )];
+      const items = [
+        { value: 'all', label: 'Tüm Binalar' },
+        ...names.map(n => ({ value: n, label: n }))
+      ];
+      renderDropdownOptions(buildingPanel, buildingBtn, items, selectedBuilding);
     }
 
     function getFilteredClassrooms() {
-      const selectedCampus = campusFilter.value;
-      const selectedBuilding = buildingFilter.value;
       const queryText = searchInput.value.trim().toLowerCase();
-
       let items = classrooms.filter(item => {
-        const matchesCampus = selectedCampus === 'all' || item.campusName === selectedCampus;
-        const matchesBuilding = selectedBuilding === 'all' || item.blockName === selectedBuilding;
-        const matchesSearch =
-          !queryText ||
-          String(item.code || '').toLowerCase().includes(queryText);
+        const matchesCampus   = selectedCampus   === 'all' || item.campusName === selectedCampus;
+        const matchesBuilding = selectedBuilding === 'all' || item.blockName  === selectedBuilding;
+        const matchesSearch   = !queryText || String(item.code || '').toLowerCase().includes(queryText);
         return matchesCampus && matchesBuilding && matchesSearch;
       });
-
       items.sort((a, b) => {
         switch (currentSort) {
           case 'name-desc':     return String(b.code || '').localeCompare(String(a.code || ''), 'tr');
@@ -430,7 +513,6 @@
           default:              return String(a.code || '').localeCompare(String(b.code || ''), 'tr');
         }
       });
-
       return items;
     }
 
@@ -642,8 +724,6 @@
       }
     }
 
-    campusFilter.addEventListener('change', () => { fillBuildingOptions(); renderCards(); });
-    buildingFilter.addEventListener('change', renderCards);
     searchInput.addEventListener('input', renderCards);
     closeModal.addEventListener('click', () => galleryModal.classList.remove('active'));
     galleryModal.addEventListener('click', e => { if (e.target === galleryModal) galleryModal.classList.remove('active'); });

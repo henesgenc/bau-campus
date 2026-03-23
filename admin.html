@@ -65,6 +65,15 @@
     .thumbs .img-box{position:relative}
     .thumbs img{width:86px;height:66px;object-fit:cover;border-radius:10px;border:1px solid var(--border)}
     .thumbs button{position:absolute;top:-6px;right:-6px;width:22px;height:22px;border:none;border-radius:999px;background:#fee4e2;color:#b42318;font-weight:800;cursor:pointer}
+    .thumbs .img-box{position:relative;cursor:grab}
+    .thumbs .img-box:active{cursor:grabbing}
+    .thumbs .img-box.dragging{opacity:.4;border:2px dashed var(--primary);border-radius:10px}
+    .thumbs .img-box.drag-over{border:2px solid var(--primary);border-radius:10px;background:var(--primary-soft)}
+    .thumbs .img-box .sort-handle{
+      position:absolute;bottom:2px;left:50%;transform:translateX(-50%);
+      background:rgba(0,0,0,.55);color:#fff;font-size:9px;border-radius:4px;
+      padding:1px 5px;pointer-events:none;letter-spacing:.05em;
+    }
     @media (max-width:860px){.grid2{grid-template-columns:1fr}.toolbar{flex-direction:column;align-items:stretch}.toolbar-right{flex-direction:column;align-items:stretch}.search{width:100%}.item{align-items:flex-start}.thumb{width:90px;height:72px}}
   </style>
 </head>
@@ -215,6 +224,10 @@
             <input id="campusName" type="text" placeholder="İSTANBUL-BEŞİKTAŞ" />
           </div>
           <div class="field">
+            <label>Sıra No <span style="color:#98a2b3;font-weight:400">(küçük sayı önce gelir)</span></label>
+            <input id="campusSortOrder" type="number" min="0" placeholder="0" />
+          </div>
+          <div class="field">
             <label>Kapak Görseli</label>
             <input id="campusImage" type="file" accept="image/*" />
           </div>
@@ -238,9 +251,13 @@
               <input id="blockFloorCount" type="number" min="0" placeholder="10" />
             </div>
             <div class="field">
-              <label>Kapak Görseli</label>
-              <input id="blockImage" type="file" accept="image/*" />
+              <label>Sıra No <span style="color:#98a2b3;font-weight:400">(küçük sayı önce gelir)</span></label>
+              <input id="blockSortOrder" type="number" min="0" placeholder="0" />
             </div>
+          </div>
+          <div class="field">
+            <label>Kapak Görseli</label>
+            <input id="blockImage" type="file" accept="image/*" />
           </div>
           <div id="blockImagePreview" class="thumbs"></div>
         </div>
@@ -368,14 +385,42 @@
     function previewMultiple(targetId, list) {
       const wrap = $(targetId);
       wrap.innerHTML = list.map((img, i) => `
-        <div class="img-box">
+        <div class="img-box" draggable="true" data-i="${i}">
           <img src="${img.url}" alt="">
           <button type="button" data-i="${i}">×</button>
+          <span class="sort-handle">⠿ sürükle</span>
         </div>
       `).join('');
+
       wrap.querySelectorAll('button').forEach(btn => {
         btn.addEventListener('click', () => {
           currentImages.splice(Number(btn.dataset.i), 1);
+          previewMultiple(targetId, currentImages);
+        });
+      });
+
+      // Sürükle-bırak sıralama
+      let dragSrc = null;
+      wrap.querySelectorAll('.img-box').forEach(box => {
+        box.addEventListener('dragstart', () => {
+          dragSrc = box;
+          setTimeout(() => box.classList.add('dragging'), 0);
+        });
+        box.addEventListener('dragend', () => box.classList.remove('dragging'));
+        box.addEventListener('dragover', e => {
+          e.preventDefault();
+          wrap.querySelectorAll('.img-box').forEach(b => b.classList.remove('drag-over'));
+          box.classList.add('drag-over');
+        });
+        box.addEventListener('dragleave', () => box.classList.remove('drag-over'));
+        box.addEventListener('drop', e => {
+          e.preventDefault();
+          box.classList.remove('drag-over');
+          if (!dragSrc || dragSrc === box) return;
+          const from = Number(dragSrc.dataset.i);
+          const to   = Number(box.dataset.i);
+          const [moved] = currentImages.splice(from, 1);
+          currentImages.splice(to, 0, moved);
           previewMultiple(targetId, currentImages);
         });
       });
@@ -389,7 +434,7 @@
       $('deleteEntityBtn').classList.add('hidden');
       ['campusForm','blockForm','classroomForm'].forEach(id => $(id).classList.add('hidden'));
       ['campusImagePreview','blockImagePreview','classroomImagePreview'].forEach(id => $(id).innerHTML = '');
-      ['campusName','blockName','blockFloorCount','classroomCode','classroomCapacity','classroomFloor','classroomType','classroomFeatures'].forEach(id => { if ($(id)) $(id).value = ''; });
+      ['campusName','blockName','blockFloorCount','campusSortOrder','blockSortOrder','classroomCode','classroomCapacity','classroomFloor','classroomType','classroomFeatures'].forEach(id => { if ($(id)) $(id).value = ''; });
       ['campusImage','blockImage','classroomImages'].forEach(id => { if ($(id)) $(id).value = ''; });
     }
 
@@ -405,6 +450,7 @@
         if (data) {
           editingId = data.id;
           $('campusName').value = data.name || '';
+          $('campusSortOrder').value = data.sortOrder ?? '';
           currentImageObject = data.imageObject || (data.imageUrl ? { url: data.imageUrl } : null);
           previewSingle('campusImagePreview', currentImageObject);
         }
@@ -419,6 +465,7 @@
           $('blockName').value = data.name || '';
           $('blockCampusId').value = data.campusId || '';
           $('blockFloorCount').value = data.floorCount || 0;
+          $('blockSortOrder').value = data.sortOrder ?? '';
           currentImageObject = data.imageObject || (data.imageUrl ? { url: data.imageUrl } : null);
           previewSingle('blockImagePreview', currentImageObject);
         }
@@ -494,8 +541,11 @@
         getDocs(query(collection(db, 'classrooms'), orderBy('code'))),
         getDocs(query(collection(db, 'classroomTypes'), orderBy('name')))
       ]);
-      campuses = campusSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-      blocks = blockSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      // sortOrder değerine göre sırala, yoksa isme göre
+      campuses = campusSnap.docs.map(d => ({ id: d.id, ...d.data() }))
+        .sort((a,b) => (a.sortOrder ?? 9999) - (b.sortOrder ?? 9999) || (a.name||'').localeCompare(b.name||'','tr'));
+      blocks = blockSnap.docs.map(d => ({ id: d.id, ...d.data() }))
+        .sort((a,b) => (a.sortOrder ?? 9999) - (b.sortOrder ?? 9999) || (a.name||'').localeCompare(b.name||'','tr'));
       classrooms = classroomSnap.docs.map(d => ({ id: d.id, ...d.data() }));
       classroomTypes = typeSnap.docs.map(d => ({ id: d.id, ...d.data() }));
 
@@ -657,7 +707,11 @@
         imageObject = await uploadFile(`campuses/${Date.now()}-${currentImageObject.file.name}`, currentImageObject.file);
       }
 
-      const payload = { name, imageUrl: imageObject?.url || '', imageObject, updatedAt: serverTimestamp() };
+      const payload = {
+        name,
+        sortOrder: $('campusSortOrder').value !== '' ? Number($('campusSortOrder').value) : null,
+        imageUrl: imageObject?.url || '', imageObject, updatedAt: serverTimestamp()
+      };
       if (editingId) {
         const old = campuses.find(x => x.id === editingId);
         if (currentImageObject?.file && old?.imageObject?.path) await deleteImageIfPossible(old.imageObject);
@@ -684,6 +738,7 @@
         campusId,
         campusName: campus?.name || '',
         floorCount: Number($('blockFloorCount').value || 0),
+        sortOrder: $('blockSortOrder').value !== '' ? Number($('blockSortOrder').value) : null,
         imageUrl: imageObject?.url || '',
         imageObject,
         updatedAt: serverTimestamp()
