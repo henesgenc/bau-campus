@@ -88,6 +88,7 @@
     }
     .results-count strong{color:var(--text)}
 
+    .sort-wrap{position:relative}
     .sort-btn{
       height:44px;padding:0 14px;border-radius:12px;
       border:1px solid var(--border);background:#f7f8fb;
@@ -97,7 +98,25 @@
       transition:background .15s,border-color .15s,color .15s;
     }
     .sort-btn:hover{background:#fff;border-color:#c5ccd8;color:var(--text)}
-    .sort-btn.active{background:var(--primary-soft);border-color:#b8cff8;color:var(--primary)}
+    .sort-btn.open{background:#fff;border-color:var(--primary);color:var(--primary)}
+    .sort-dropdown{
+      position:absolute;top:calc(100% + 8px);right:0;z-index:30;
+      background:#fff;border:1px solid var(--border);border-radius:14px;
+      box-shadow:var(--shadow-lg);
+      min-width:190px;padding:6px;
+      opacity:0;pointer-events:none;transform:translateY(-6px);
+      transition:opacity .15s,transform .15s;
+    }
+    .sort-dropdown.open{opacity:1;pointer-events:all;transform:translateY(0)}
+    .sort-option{
+      display:flex;align-items:center;gap:10px;
+      padding:9px 12px;border-radius:9px;
+      font-size:13.5px;font-weight:500;color:#344054;cursor:pointer;
+      transition:background .12s;
+    }
+    .sort-option:hover{background:#f5f7fb}
+    .sort-option.selected{background:var(--primary-soft);color:var(--primary);font-weight:700}
+    .sort-option-icon{font-size:13px;width:16px;text-align:center;opacity:.6}
 
     /* ── GRID ── */
     .content{padding:28px 0 64px}
@@ -121,17 +140,14 @@
       display:flex;flex-direction:column;
     }
     .card:hover{
-      transform:translateY(-5px);
       box-shadow:var(--shadow-lg);
-      border-color:transparent;
+      border-color:#d0d7e3;
     }
     .card-img-wrap{position:relative;overflow:hidden}
     .card img{
       width:100%;height:200px;object-fit:cover;display:block;
       background:#edf0f5;
-      transition:transform .35s ease;
     }
-    .card:hover img{transform:scale(1.04)}
     .card-badge{
       position:absolute;top:12px;left:12px;
       background:rgba(15,25,35,.55);
@@ -247,10 +263,18 @@
           <span class="control-icon">⌕</span>
           <input id="searchInput" class="input" type="text" placeholder="Sınıf adı ile ara..." />
         </div>
-        <button id="sortBtn" class="sort-btn" title="Sıralama">
-          <span id="sortIcon">↕</span>
-          <span id="sortLabel">Ada göre</span>
-        </button>
+        <div class="sort-wrap">
+          <button id="sortBtn" class="sort-btn">
+            ↕ <span id="sortLabel">Sırala</span>
+          </button>
+          <div id="sortDropdown" class="sort-dropdown">
+            <div class="sort-option selected" data-value="name-asc"><span class="sort-option-icon">↑</span>Ada göre (A→Z)</div>
+            <div class="sort-option" data-value="name-desc"><span class="sort-option-icon">↓</span>Ada göre (Z→A)</div>
+            <div class="sort-option" data-value="capacity-desc"><span class="sort-option-icon">↓</span>Kapasite (çoktan aza)</div>
+            <div class="sort-option" data-value="capacity-asc"><span class="sort-option-icon">↑</span>Kapasite (azdan çoğa)</div>
+            <div class="sort-option" data-value="floor-asc"><span class="sort-option-icon">↑</span>Kata göre</div>
+          </div>
+        </div>
         <div class="results-count">
           <strong><span id="resultCount">0</span></strong> sınıf
         </div>
@@ -308,27 +332,41 @@
     let classrooms = [];
     let activeItem = null;
     let activeImageUrl = '';
+    let currentSort = 'name-asc';
 
-    const sortModes = [
-      { value: 'name-asc',      label: 'Ada göre',   icon: '↑' },
-      { value: 'name-desc',     label: 'Ada göre',   icon: '↓' },
-      { value: 'capacity-desc', label: 'Kapasite',   icon: '↓' },
-      { value: 'capacity-asc',  label: 'Kapasite',   icon: '↑' },
-      { value: 'floor-asc',     label: 'Kat',        icon: '↑' },
-    ];
-    let sortIndex = 0;
+    const sortBtn      = document.getElementById('sortBtn');
+    const sortLabel    = document.getElementById('sortLabel');
+    const sortDropdown = document.getElementById('sortDropdown');
 
-    const sortBtn   = document.getElementById('sortBtn');
-    const sortIcon  = document.getElementById('sortIcon');
-    const sortLabel = document.getElementById('sortLabel');
+    const sortLabels = {
+      'name-asc':      'Ada göre (A→Z)',
+      'name-desc':     'Ada göre (Z→A)',
+      'capacity-desc': 'Kapasite ↓',
+      'capacity-asc':  'Kapasite ↑',
+      'floor-asc':     'Kata göre',
+    };
 
-    sortBtn.addEventListener('click', () => {
-      sortIndex = (sortIndex + 1) % sortModes.length;
-      const m = sortModes[sortIndex];
-      sortIcon.textContent  = m.icon;
-      sortLabel.textContent = m.label;
-      sortBtn.classList.toggle('active', sortIndex !== 0);
-      renderCards();
+    sortBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      sortBtn.classList.toggle('open');
+      sortDropdown.classList.toggle('open');
+    });
+
+    sortDropdown.querySelectorAll('.sort-option').forEach(opt => {
+      opt.addEventListener('click', () => {
+        currentSort = opt.dataset.value;
+        sortLabel.textContent = sortLabels[currentSort];
+        sortDropdown.querySelectorAll('.sort-option').forEach(o => o.classList.remove('selected'));
+        opt.classList.add('selected');
+        sortBtn.classList.remove('open');
+        sortDropdown.classList.remove('open');
+        renderCards();
+      });
+    });
+
+    document.addEventListener('click', () => {
+      sortBtn.classList.remove('open');
+      sortDropdown.classList.remove('open');
     });
 
     function floorNumber(text) {
@@ -386,9 +424,8 @@
         return matchesCampus && matchesBuilding && matchesSearch;
       });
 
-      const sortValue = sortModes[sortIndex].value;
       items.sort((a, b) => {
-        switch (sortValue) {
+        switch (currentSort) {
           case 'name-desc':     return String(b.code || '').localeCompare(String(a.code || ''), 'tr');
           case 'capacity-desc': return Number(b.capacity || 0) - Number(a.capacity || 0);
           case 'capacity-asc':  return Number(a.capacity || 0) - Number(b.capacity || 0);
