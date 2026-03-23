@@ -143,6 +143,7 @@
           <div class="toolbar-left"><span id="classroomCount">0</span> sınıf</div>
           <div class="toolbar-right">
             <input id="classroomSearch" class="search" type="text" placeholder="Sınıf adı, blok veya kat ile ara..." />
+            <button id="activateAllBtn" class="btn btn-secondary" title="Tüm sınıfları aktif hale getirir">✔ Tümünü Aktif Et</button>
             <button id="newClassroomBtn" class="btn btn-primary" style="width: -webkit-fill-available;">＋ Yeni Sınıf</button>
           </div>
         </div>
@@ -301,7 +302,7 @@
     import { db, auth, storage } from './firebase-config.js';
     import {
       collection, getDocs, getDoc, query, orderBy, addDoc, updateDoc, deleteDoc,
-      doc, serverTimestamp, setDoc
+      doc, serverTimestamp, setDoc, writeBatch
     } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js';
     import {
       signInWithEmailAndPassword, onAuthStateChanged, signOut
@@ -582,7 +583,7 @@
         // Aktiflik filtresi: sadece aktif olanlar gösterilsin
         const filtered = classrooms.filter(c => {
           const text = `${c.code || ''} ${c.blockName || ''} ${c.floor || ''} ${c.campusName || ''}`.toLowerCase();
-          return (c.active !== false) && text.includes(q);
+          return text.includes(q);
         });
 
         const list = $('classroomList');
@@ -591,12 +592,12 @@
           return;
         }
         list.innerHTML = filtered.map(c => `
-          <article class="item">
+          <article class="item" style="${c.active === false ? 'opacity:0.7;border-left:4px solid #f04438' : ''}">
             <div class="item-left">
               ${c.images?.[0] ? `<img class="thumb" src="${c.images[0]}" alt="">` : `<div class="thumb placeholder">🪑</div>`}
               <div class="item-body">
-                <h3 class="item-title">${escapeHtml(c.code || '')}</h3>
-                <div class="item-meta">${escapeHtml(c.blockName || '-')} • ${escapeHtml(c.floor || '-')} • ${Number(c.capacity || 0)} kişi${c.active === false ? ' <span style=\"color:#b42318;font-weight:600\">(Pasif)</span>' : ''}</div>
+                <h3 class="item-title">${escapeHtml(c.code || '')}${c.active === false ? ' <span style="font-size:13px;font-weight:700;background:#fee4e2;color:#b42318;padding:2px 8px;border-radius:6px;margin-left:6px">Pasif</span>' : ''}</h3>
+                <div class="item-meta">${escapeHtml(c.blockName || '-')} • ${escapeHtml(c.floor || '-')} • ${Number(c.capacity || 0)} kişi</div>
               </div>
             </div>
             <div class="item-actions">
@@ -831,6 +832,38 @@
 
     $('saveSettingsBtn').addEventListener('click', saveSettings);
     $('classroomSearch').addEventListener('input', renderClassrooms);
+
+    $('activateAllBtn').addEventListener('click', async () => {
+      if (!confirm('Tüm sınıflar aktif hale getirilsin mi?')) return;
+      const btn = $('activateAllBtn');
+      const oldText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = 'İşleniyor...';
+      try {
+        const inactiveClassrooms = classrooms.filter(c => c.active === false);
+        if (!inactiveClassrooms.length) {
+          alert('Zaten tüm sınıflar aktif durumda.');
+          return;
+        }
+        // Firestore batch max 500 işlem — gerekirse böl
+        const chunkSize = 500;
+        for (let i = 0; i < inactiveClassrooms.length; i += chunkSize) {
+          const batch = writeBatch(db);
+          inactiveClassrooms.slice(i, i + chunkSize).forEach(c => {
+            batch.update(doc(db, 'classrooms', c.id), { active: true });
+          });
+          await batch.commit();
+        }
+        await loadAll();
+        alert(`${inactiveClassrooms.length} sınıf aktif hale getirildi.`);
+      } catch (e) {
+        console.error(e);
+        alert('İşlem sırasında hata oluştu: ' + e.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = oldText;
+      }
+    });
 
     $('addTypeBtn').addEventListener('click', async () => {
       clearStatus($('typeStatus'));
