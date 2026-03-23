@@ -139,13 +139,39 @@
       </section>
 
       <section id="classroomsPanel" class="panel">
-        <div class="toolbar">
-          <div class="toolbar-left"><span id="classroomCount">0</span> sınıf</div>
-          <div class="toolbar-right">
-            <input id="classroomSearch" class="search" type="text" placeholder="Sınıf adı, blok veya kat ile ara..." />
-            <button id="newClassroomBtn" class="btn btn-primary" style="width: -webkit-fill-available;">＋ Yeni Sınıf</button>
+          <div class="toolbar">
+            <div class="toolbar-left"><span id="classroomCount">0</span> sınıf</div>
+            <div class="toolbar-right">
+              <input id="classroomSearch" class="search" type="text" placeholder="Sınıf adı, blok veya kat ile ara..." />
+              <button id="newClassroomBtn" class="btn btn-primary" style="width: -webkit-fill-available;">＋ Yeni Sınıf</button>
+              <button id="activateAllClassroomsBtn" class="btn btn-secondary" type="button">Tüm Sınıfları Aktif Yap</button>
+            </div>
           </div>
-        </div>
+            // Tüm sınıfları aktif yap fonksiyonu
+            $('activateAllClassroomsBtn').addEventListener('click', async () => {
+              if (!confirm('Tüm sınıflar aktif yapılacak. Emin misiniz?')) return;
+              try {
+                const { BulkWriter } = await import('https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js');
+                const bulkWriter = db.bulkWriter ? db.bulkWriter() : null;
+                if (bulkWriter) {
+                  const snapshot = await getDocs(collection(db, 'classrooms'));
+                  snapshot.forEach(docSnap => {
+                    bulkWriter.update(docSnap.ref, { active: true });
+                  });
+                  await bulkWriter.close();
+                } else {
+                  // Fallback: tek tek güncelle
+                  const snapshot = await getDocs(collection(db, 'classrooms'));
+                  for (const docSnap of snapshot.docs) {
+                    await updateDoc(doc(db, 'classrooms', docSnap.id), { active: true });
+                  }
+                }
+                alert('Tüm sınıflar aktif yapıldı.');
+                await loadAll();
+              } catch (e) {
+                alert('Hata oluştu: ' + (e.message || e));
+              }
+            });
         <div id="classroomList" class="list"></div>
       </section>
 
