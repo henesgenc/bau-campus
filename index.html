@@ -417,10 +417,7 @@
         const matchesBuilding = selectedBuilding === 'all' || item.blockName === selectedBuilding;
         const matchesSearch =
           !queryText ||
-          String(item.code || '').toLowerCase().includes(queryText) ||
-          String(item.blockName || '').toLowerCase().includes(queryText) ||
-          String(item.campusName || '').toLowerCase().includes(queryText) ||
-          String(item.type || '').toLowerCase().includes(queryText);
+          String(item.code || '').toLowerCase().includes(queryText);
         return matchesCampus && matchesBuilding && matchesSearch;
       });
 
