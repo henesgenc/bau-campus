@@ -634,14 +634,6 @@
     }
 
     async function generateBrandedImage(item, imageUrl) {
-      const outputWidth = 1600;
-      const outputHeight = 1000;
-      const overlayHeight = 190;
-      const canvas = document.createElement('canvas');
-      canvas.width = outputWidth;
-      canvas.height = outputHeight;
-      const ctx = canvas.getContext('2d');
-
       const img = new Image();
       img.crossOrigin = 'anonymous';
       img.referrerPolicy = 'no-referrer';
@@ -652,13 +644,18 @@
         img.src = imageUrl;
       });
 
-      const scale = Math.max(outputWidth / img.width, outputHeight / img.height);
-      const drawWidth = img.width * scale;
-      const drawHeight = img.height * scale;
-      const dx = (outputWidth - drawWidth) / 2;
-      const dy = (outputHeight - drawHeight) / 2;
+      // Canvas'ı görselin orijinal boyutuna ayarla
+      const outputWidth = img.naturalWidth;
+      const outputHeight = img.naturalHeight;
+      const overlayHeight = Math.round(outputHeight * 0.19);
 
-      ctx.drawImage(img, dx, dy, drawWidth, drawHeight);
+      const canvas = document.createElement('canvas');
+      canvas.width = outputWidth;
+      canvas.height = outputHeight;
+      const ctx = canvas.getContext('2d');
+
+      // Görseli birebir çiz, kırpma yok
+      ctx.drawImage(img, 0, 0, outputWidth, outputHeight);
 
       const gradient = ctx.createLinearGradient(0, outputHeight - overlayHeight - 120, 0, outputHeight);
       gradient.addColorStop(0, 'rgba(0,0,0,0)');
@@ -676,8 +673,8 @@
           logo.src = './logo_gorsel.png';
         });
 
-        const maxLogoWidth = 320;
-        const maxLogoHeight = 90;
+        const maxLogoWidth = Math.round(outputWidth * 0.20);
+        const maxLogoHeight = Math.round(outputHeight * 0.09);
         const logoScale = Math.min(
           maxLogoWidth / logo.width,
           maxLogoHeight / logo.height
@@ -687,20 +684,25 @@
 
         ctx.shadowColor = 'rgba(0,0,0,0.25)';
         ctx.shadowBlur = 8;
-        ctx.drawImage(logo, 60, 50, logoWidth, logoHeight);
+        const logoPad = Math.round(outputWidth * 0.037);
+        ctx.drawImage(logo, logoPad, Math.round(outputHeight * 0.05), logoWidth, logoHeight);
         ctx.shadowBlur = 0;
       } catch (e) {
         // logo dosyası yoksa sessizce devam et
       }
 
+      const pad = Math.round(outputWidth * 0.04);
+      const titleSize = Math.round(outputHeight * 0.054);
+      const metaSize  = Math.round(outputHeight * 0.028);
+
       ctx.fillStyle = '#ffffff';
-      ctx.font = '800 54px Arial';
-      ctx.fillText(item.code || '-', 64, outputHeight - 96);
+      ctx.font = `800 ${titleSize}px Arial`;
+      ctx.fillText(item.code || '-', pad, outputHeight - Math.round(outputHeight * 0.096));
 
       ctx.fillStyle = 'rgba(255,255,255,0.92)';
-      ctx.font = '400 28px Arial';
+      ctx.font = `400 ${metaSize}px Arial`;
       const metaText = `${item.campusName || '-'} › ${item.blockName || '-'}   •   ${item.capacity || 0} kişi kapasiteli   •   ${item.floor || '-'}`;
-      wrapText(ctx, metaText, 64, outputHeight - 48, outputWidth - 128, 38);
+      wrapText(ctx, metaText, pad, outputHeight - Math.round(outputHeight * 0.048), outputWidth - pad * 2, Math.round(metaSize * 1.35));
 
       return canvas;
     }
