@@ -949,6 +949,10 @@
           for (const img of (old.imageObjects || [])) {
             if (img.path && !keptPaths.has(img.path)) await deleteImageIfPossible(img);
           }
+          // Derslik güncellendi — branded önbellek görseli artık geçersiz, sil
+          if (old?.brandedImagePath) await deleteImageIfPossible({ path: old.brandedImagePath });
+          payload.brandedImageUrl = null;
+          payload.brandedImagePath = null;
           await updateDoc(doc(db, 'classrooms', editingId), payload);
         } else {
           payload.createdAt = serverTimestamp();

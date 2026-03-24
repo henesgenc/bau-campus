@@ -351,8 +351,9 @@
   </div>
 
   <script type="module">
-    import { db } from './firebase-config.js';
-    import { collection, getDocs, query, orderBy, doc, getDoc, where } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js';
+    import { db, storage } from './firebase-config.js';
+    import { collection, getDocs, query, orderBy, doc, getDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js';
+    import { ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-storage.js';
     
     const campusBtn     = document.getElementById('campusBtn');
     const campusPanel   = document.getElementById('campusPanel');
@@ -711,21 +712,65 @@
 
       const originalText = downloadImage.textContent;
       downloadImage.disabled = true;
-      downloadImage.textContent = 'Hazırlanıyor...';
 
       try {
+        // 1) Önce cache'e bak — daha önce üretilmiş branded görsel var mı?
+        if (activeItem.brandedImageUrl) {
+          downloadImage.textContent = 'İndiriliyor...';
+          const response = await fetch(activeItem.brandedImageUrl);
+          if (response.ok) {
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `BAU-${activeItem.code || 'derslik'}.jpg`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+            return;
+          }
+          // URL geçersizse cache'i temizleyip yeniden üret
+          activeItem.brandedImageUrl = null;
+          activeItem.brandedImagePath = null;
+        }
+
+        // 2) Cache yok — canvas'ta üret
+        downloadImage.textContent = 'Hazırlanıyor...';
         const canvas = await generateBrandedImage(activeItem, activeImageUrl);
         const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.92));
         if (!blob) throw new Error('Blob oluşturulamadı');
 
-        const url = URL.createObjectURL(blob);
+        // 3) Üretilen görseli indir
+        const localUrl = URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = url;
+        a.href = localUrl;
         a.download = `BAU-${activeItem.code || 'derslik'}.jpg`;
         document.body.appendChild(a);
         a.click();
         a.remove();
-        URL.revokeObjectURL(url);
+        URL.revokeObjectURL(localUrl);
+
+        // 4) Arka planda Storage'a yükle ve Firestore'u güncelle (sessizce)
+        try {
+          downloadImage.textContent = 'Kaydediliyor...';
+          const path = `branded/${activeItem.id}-${activeItem.code || 'derslik'}.jpg`;
+          const storageRef = ref(storage, path);
+          await uploadBytes(storageRef, blob);
+          const downloadUrl = await getDownloadURL(storageRef);
+          await updateDoc(doc(db, 'classrooms', activeItem.id), {
+            brandedImageUrl: downloadUrl,
+            brandedImagePath: path
+          });
+          // Lokal nesneyi de güncelle ki aynı oturumda tekrar basılmasın
+          activeItem.brandedImageUrl = downloadUrl;
+          activeItem.brandedImagePath = path;
+          const cached = classrooms.find(c => c.id === activeItem.id);
+          if (cached) { cached.brandedImageUrl = downloadUrl; cached.brandedImagePath = path; }
+        } catch (uploadErr) {
+          // Yükleme başarısız olursa kullanıcıyı rahatsız etme; görsel zaten indirildi
+          console.warn('Branded görsel Storage\'a yüklenemedi:', uploadErr);
+        }
       } catch (error) {
         console.error(error);
         alert('Görsel oluşturulamadı. Storage erişimi veya CORS ayarlarını kontrol edin.');
