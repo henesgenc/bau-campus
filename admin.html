@@ -331,9 +331,10 @@
       <section id="classroomsPanel" class="panel">
         <div class="toolbar">
           <div class="toolbar-left"><strong><span id="classroomCount">0</span></strong> sınıf</div>
+          <div style="flex:1;display:flex;justify-content:center;padding:0 16px">
+            <input id="classroomSearch" class="search" type="text" placeholder="Sınıf adı, blok veya kat ile ara..." style="width:min(420px,100%)" />
+          </div>
           <div class="toolbar-right">
-            <input id="classroomSearch" class="search" type="text" placeholder="Sınıf adı, blok veya kat ile ara..." />
-            <button id="activateAllBtn" class="btn btn-secondary" title="Tüm sınıfları aktif hale getirir">✔ Tümünü Aktif Et</button>
             <button id="newClassroomBtn" class="btn btn-primary">＋ Yeni Sınıf</button>
           </div>
         </div>
@@ -360,7 +361,11 @@
       </section>
 
       <section id="settingsPanel" class="panel">
-        <div class="card">
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-header">
+            <h2>Site Ayarları</h2>
+            <p>Başlık, alt başlık ve logo düzenleyin.</p>
+          </div>
           <div class="card-body">
             <div id="settingsStatus" class="status"></div>
             <div class="grid2">
@@ -379,6 +384,32 @@
             </div>
             <div id="settingLogoPreview" class="thumbs"></div>
             <button id="saveSettingsBtn" class="btn btn-primary" style="margin-top:8px">Ayarları Kaydet</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2>Toplu İşlemler</h2>
+            <p>Tüm sınıflara uygulanacak bakım ve optimizasyon araçları.</p>
+          </div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:12px">
+
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px;background:#f7f8fb;border:1px solid var(--border);border-radius:12px">
+              <div>
+                <div style="font-size:14px;font-weight:700;margin-bottom:2px">✔ Tümünü Aktif Et</div>
+                <div style="font-size:13px;color:var(--muted)">Pasif durumdaki tüm sınıfları bir anda aktif hale getirir.</div>
+              </div>
+              <button id="activateAllBtn" class="btn btn-secondary" style="flex-shrink:0">Çalıştır</button>
+            </div>
+
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px;background:#f7f8fb;border:1px solid var(--border);border-radius:12px">
+              <div>
+                <div style="font-size:14px;font-weight:700;margin-bottom:2px">🖼 Thumbnail Oluştur</div>
+                <div style="font-size:13px;color:var(--muted)">Thumbnail'i olmayan sınıflar için küçük önizleme görseli oluşturur. Ana sayfa açılışını hızlandırır.</div>
+              </div>
+              <button id="bulkThumbBtn" class="btn btn-ghost" style="flex-shrink:0">Çalıştır</button>
+            </div>
+
           </div>
         </div>
       </section>
@@ -493,6 +524,30 @@
     </div>
   </div>
 
+  <!-- Toplu Thumbnail Progress Modal -->
+  <div id="bulkThumbModal" class="modal">
+    <div class="modal-box" style="max-width:480px">
+      <div class="modal-header">
+        <h3 class="modal-title">🖼 Thumbnail Oluşturuluyor</h3>
+      </div>
+      <div class="card-body" style="padding:24px">
+        <div id="bulkThumbStatus" style="margin-bottom:16px;font-size:14px;color:var(--muted);font-weight:600"></div>
+        <!-- progress bar -->
+        <div style="background:#e8eaef;border-radius:99px;height:10px;overflow:hidden;margin-bottom:18px">
+          <div id="bulkThumbBar" style="height:100%;width:0%;background:var(--primary);border-radius:99px;transition:width .3s ease"></div>
+        </div>
+        <!-- scrollable log -->
+        <div id="bulkThumbLog"
+          style="max-height:220px;overflow-y:auto;font-size:12.5px;line-height:1.8;
+                 background:#f7f8fb;border:1px solid var(--border);border-radius:11px;padding:12px;
+                 font-family:monospace;color:#344054"></div>
+        <div style="margin-top:18px;display:flex;justify-content:flex-end">
+          <button id="bulkThumbCloseBtn" class="btn btn-ghost hidden">Kapat</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script type="module">
     import { db, auth, storage } from './firebase-config.js';
     import {
@@ -518,6 +573,7 @@
     let editingId = null;
     let currentImageObject = null;
     let currentImages = [];
+    let currentThumbnailIndex = 0; // hangi görsel thumbnail olacak (index)
 
     function showStatus(el, text, type='success') {
       el.textContent = text;
@@ -563,14 +619,31 @@
     function previewMultiple(targetId, list) {
       const wrap = $(targetId);
       wrap.innerHTML = list.map((img, i) => `
-        <div class="img-box">
-          <img src="${img.url}" alt="">
-          <button type="button" data-i="${i}">×</button>
+        <div class="img-box" style="position:relative">
+          <img src="${img.url}" alt="" style="${i === currentThumbnailIndex ? 'border:2.5px solid var(--primary);border-radius:9px' : ''}">
+          <button type="button" data-i="${i}" class="thumb-del-btn">×</button>
+          <button type="button" data-ti="${i}" class="thumb-sel-btn" title="Thumbnail yap"
+            style="position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);
+              font-size:10px;font-weight:700;white-space:nowrap;padding:2px 6px;
+              border:none;border-radius:6px;cursor:pointer;
+              background:${i === currentThumbnailIndex ? 'var(--primary)' : '#e2e6ed'};
+              color:${i === currentThumbnailIndex ? '#fff' : '#5a6477'};">
+            ${i === currentThumbnailIndex ? '★ Thumbnail' : 'Thumbnail'}
+          </button>
         </div>
       `).join('');
-      wrap.querySelectorAll('button').forEach(btn => {
+      wrap.querySelectorAll('.thumb-del-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-          currentImages.splice(Number(btn.dataset.i), 1);
+          const idx = Number(btn.dataset.i);
+          currentImages.splice(idx, 1);
+          if (currentThumbnailIndex >= currentImages.length) currentThumbnailIndex = 0;
+          else if (currentThumbnailIndex > idx) currentThumbnailIndex--;
+          previewMultiple(targetId, currentImages);
+        });
+      });
+      wrap.querySelectorAll('.thumb-sel-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          currentThumbnailIndex = Number(btn.dataset.ti);
           previewMultiple(targetId, currentImages);
         });
       });
@@ -580,6 +653,7 @@
       editingId = null;
       currentImageObject = null;
       currentImages = [];
+      currentThumbnailIndex = 0;
       clearStatus($('modalStatus'));
       $('deleteEntityBtn').classList.add('hidden');
       ['campusForm','blockForm','classroomForm'].forEach(id => $(id).classList.add('hidden'));
@@ -639,6 +713,13 @@
           $('classroomFeatures').value = (data.features || []).join(', ');
            $('classroomActive').checked = data.active !== false;
           currentImages = Array.isArray(data.imageObjects) ? [...data.imageObjects] : Array.isArray(data.images) ? data.images.map(url => ({ url })) : [];
+          // Mevcut thumbnail'in index'ini bul
+          if (data.thumbnailPath) {
+            const ti = currentImages.findIndex(img => img.path === data.thumbnailPath);
+            currentThumbnailIndex = ti >= 0 ? ti : 0;
+          } else {
+            currentThumbnailIndex = 0;
+          }
           previewMultiple('classroomImagePreview', currentImages);
         }
       }
@@ -903,6 +984,25 @@
       }
     }
 
+    // Seçili görseli 400×300 JPEG thumbnail'e dönüştürür
+    async function generateThumbnail(imageSource) {
+      const img = new Image();
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+        img.src = imageSource;
+      });
+      const TW = 400, TH = 300;
+      const scale = Math.max(TW / img.naturalWidth, TH / img.naturalHeight);
+      const sw = TW / scale, sh = TH / scale;
+      const sx = (img.naturalWidth  - sw) / 2;
+      const sy = (img.naturalHeight - sh) / 2;
+      const canvas = document.createElement('canvas');
+      canvas.width = TW; canvas.height = TH;
+      canvas.getContext('2d').drawImage(img, sx, sy, sw, sh, 0, 0, TW, TH);
+      return new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.82));
+    }
+
     async function saveClassroom() {
       const code = $('classroomCode').value.trim();
       const campusId = $('classroomCampusId').value;
@@ -927,6 +1027,22 @@
           }
         }
 
+        // Thumbnail oluştur ve yükle
+        let thumbnailUrl = null, thumbnailPath = null;
+        const thumbSource = uploaded[currentThumbnailIndex] || uploaded[0];
+        if (thumbSource) {
+          showStatus($('modalStatus'), 'Thumbnail oluşturuluyor...');
+          try {
+            const thumbBlob = await generateThumbnail(thumbSource.url);
+            const thumbPath = `classrooms/${code}/thumb_${Date.now()}.jpg`;
+            const thumbObj  = await uploadFile(thumbPath, thumbBlob);
+            thumbnailUrl  = thumbObj.url;
+            thumbnailPath = thumbObj.path;
+          } catch (thumbErr) {
+            console.warn('Thumbnail oluşturulamadı, devam ediliyor:', thumbErr);
+          }
+        }
+
         const payload = {
           code,
           capacity: Number($('classroomCapacity').value || 0),
@@ -939,7 +1055,9 @@
           features: $('classroomFeatures').value.split(',').map(x => x.trim()).filter(Boolean),
           images: uploaded.map(x => x.url),
           imageObjects: uploaded,
-            active: $('classroomActive').checked,
+          thumbnailUrl,
+          thumbnailPath,
+          active: $('classroomActive').checked,
           updatedAt: serverTimestamp()
         };
 
@@ -949,6 +1067,8 @@
           for (const img of (old.imageObjects || [])) {
             if (img.path && !keptPaths.has(img.path)) await deleteImageIfPossible(img);
           }
+          // Eski thumbnail'i sil (yeni biri oluşturuldu)
+          if (old?.thumbnailPath) await deleteImageIfPossible({ path: old.thumbnailPath });
           // Derslik güncellendi — branded önbellek görseli artık geçersiz, sil
           if (old?.brandedImagePath) await deleteImageIfPossible({ path: old.brandedImagePath });
           payload.brandedImageUrl = null;
@@ -1071,6 +1191,77 @@
         btn.disabled = false;
         btn.textContent = oldText;
       }
+    });
+
+    $('bulkThumbBtn').addEventListener('click', async () => {
+      const pending = classrooms.filter(c =>
+        !c.thumbnailUrl && Array.isArray(c.images) && c.images.length > 0
+      );
+      if (!pending.length) {
+        alert('Tüm derslikler zaten thumbnail\'e sahip veya görseli yok.');
+        return;
+      }
+      if (!confirm(`Thumbnail\'i olmayan ${pending.length} derslik için thumbnail oluşturulsun mu? Bu işlem biraz sürebilir.`)) return;
+
+      // Modal aç, sıfırla
+      const modal   = $('bulkThumbModal');
+      const bar     = $('bulkThumbBar');
+      const status  = $('bulkThumbStatus');
+      const log     = $('bulkThumbLog');
+      const closeBtn = $('bulkThumbCloseBtn');
+      bar.style.width = '0%';
+      log.innerHTML = '';
+      closeBtn.classList.add('hidden');
+      modal.classList.add('active');
+
+      const addLog = (msg, color = '#344054') => {
+        const line = document.createElement('div');
+        line.style.color = color;
+        line.textContent = msg;
+        log.appendChild(line);
+        log.scrollTop = log.scrollHeight;
+      };
+
+      let done = 0, succeeded = 0, failed = 0;
+
+      for (const classroom of pending) {
+        status.textContent = `İşleniyor: ${classroom.code || classroom.id} (${done + 1} / ${pending.length})`;
+        try {
+          // İlk görselden blob al
+          const imgUrl = classroom.images[0];
+          const thumbBlob = await generateThumbnail(imgUrl);
+          const thumbPath = `classrooms/${classroom.code || classroom.id}/thumb_${Date.now()}.jpg`;
+          const thumbObj  = await uploadFile(thumbPath, thumbBlob);
+
+          await updateDoc(doc(db, 'classrooms', classroom.id), {
+            thumbnailUrl:  thumbObj.url,
+            thumbnailPath: thumbObj.path
+          });
+
+          // Lokal state'i güncelle
+          const local = classrooms.find(c => c.id === classroom.id);
+          if (local) { local.thumbnailUrl = thumbObj.url; local.thumbnailPath = thumbObj.path; }
+
+          succeeded++;
+          addLog(`✓ ${classroom.code || classroom.id}`, 'var(--success)');
+        } catch (e) {
+          failed++;
+          addLog(`✗ ${classroom.code || classroom.id} — ${e.message}`, 'var(--danger)');
+          console.error(classroom.code, e);
+        }
+        done++;
+        bar.style.width = `${Math.round((done / pending.length) * 100)}%`;
+      }
+
+      status.textContent = `Tamamlandı — ${succeeded} başarılı, ${failed} hatalı`;
+      addLog(`─────────────────────────────`, '#b0b9c8');
+      addLog(`Toplam: ${pending.length}  ✓ ${succeeded}  ✗ ${failed}`,
+             failed > 0 ? 'var(--danger)' : 'var(--success)');
+      closeBtn.classList.remove('hidden');
+    });
+
+    $('bulkThumbCloseBtn').addEventListener('click', () => {
+      $('bulkThumbModal').classList.remove('active');
     });
 
     $('addTypeBtn').addEventListener('click', async () => {

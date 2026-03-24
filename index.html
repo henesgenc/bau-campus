@@ -570,11 +570,12 @@
 
       items.forEach(item => {
         const firstImage = Array.isArray(item.images) && item.images.length ? item.images[0] : '';
+        const cardImage  = item.thumbnailUrl || firstImage;
         const card = document.createElement('article');
         card.className = 'card';
         card.innerHTML = `
           <div class="card-img-wrap">
-            <img class="card-image" src="${firstImage}" alt="${item.code || 'Derslik'} görseli" crossorigin="anonymous" />
+            <img class="card-image" src="${cardImage}" alt="${item.code || 'Derslik'} görseli" crossorigin="anonymous" />
             <span class="card-badge">${item.code || '-'}</span>
           </div>
           <div class="card-body">
