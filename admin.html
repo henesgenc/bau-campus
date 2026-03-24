@@ -986,12 +986,29 @@
 
     // Seçili görseli 400×300 JPEG thumbnail'e dönüştürür
     async function generateThumbnail(imageSource) {
+      // Firebase Storage görselleri doğrudan img.src ile canvas'a çizilince
+      // CORS nedeniyle canvas "tainted" oluyor ve toBlob engelleniyor.
+      // Çözüm: görseli önce fetch ile blob olarak çek, yerel object URL kullan.
+      let objectUrl = null;
+      try {
+        const response = await fetch(imageSource);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const blob = await response.blob();
+        objectUrl = URL.createObjectURL(blob);
+      } catch (fetchErr) {
+        // fetch başarısız olursa crossOrigin ile dene (fallback)
+        objectUrl = null;
+      }
+
       const img = new Image();
+      if (!objectUrl) img.crossOrigin = 'anonymous';
+
       await new Promise((resolve, reject) => {
         img.onload = resolve;
         img.onerror = reject;
-        img.src = imageSource;
+        img.src = objectUrl || imageSource;
       });
+
       const TW = 400, TH = 300;
       const scale = Math.max(TW / img.naturalWidth, TH / img.naturalHeight);
       const sw = TW / scale, sh = TH / scale;
@@ -1000,7 +1017,10 @@
       const canvas = document.createElement('canvas');
       canvas.width = TW; canvas.height = TH;
       canvas.getContext('2d').drawImage(img, sx, sy, sw, sh, 0, 0, TW, TH);
-      return new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.82));
+      const result = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.82));
+
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+      return result;
     }
 
     async function saveClassroom() {
