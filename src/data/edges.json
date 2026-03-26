@@ -1,0 +1,25 @@
+[
+  { "from": "entrance_main", "to": "hall_0_a", "weight": 8 },
+  { "from": "hall_0_a", "to": "stairs_a_0", "weight": 7 },
+  { "from": "hall_0_a", "to": "elevator_0", "weight": 7 },
+  { "from": "stairs_a_0", "to": "room_z12", "weight": 9 },
+  { "from": "elevator_0", "to": "room_z15", "weight": 8 },
+  { "from": "stairs_a_0", "to": "elevator_0", "weight": 5 },
+
+  { "from": "stairs_a_1", "to": "hall_1_a", "weight": 7 },
+  { "from": "elevator_1", "to": "hall_1_a", "weight": 7 },
+  { "from": "hall_1_a", "to": "room_b205", "weight": 10 },
+  { "from": "hall_1_a", "to": "room_b210", "weight": 10 },
+  { "from": "stairs_a_1", "to": "elevator_1", "weight": 5 },
+
+  { "from": "stairs_a_2", "to": "hall_2_a", "weight": 7 },
+  { "from": "elevator_2", "to": "hall_2_a", "weight": 7 },
+  { "from": "hall_2_a", "to": "room_lab201", "weight": 10 },
+  { "from": "hall_2_a", "to": "room_c218", "weight": 10 },
+  { "from": "stairs_a_2", "to": "elevator_2", "weight": 5 },
+
+  { "from": "stairs_a_0", "to": "stairs_a_1", "weight": 12 },
+  { "from": "stairs_a_1", "to": "stairs_a_2", "weight": 12 },
+  { "from": "elevator_0", "to": "elevator_1", "weight": 13 },
+  { "from": "elevator_1", "to": "elevator_2", "weight": 13 }
+]
