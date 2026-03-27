@@ -11,9 +11,6 @@
 /admin.html
   Cache-Control: no-cache
 
-/map-admin.html
-  Cache-Control: no-cache
-
 /map.html
   Cache-Control: no-cache
 
