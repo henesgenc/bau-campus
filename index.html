@@ -725,6 +725,18 @@
       return await new Promise(resolve => canvas.toBlob(resolve, type, quality));
     }
 
+    async function imageBlobToPngBlob(blob) {
+      const bitmap = await createImageBitmap(blob);
+      const canvas = document.createElement('canvas');
+      canvas.width = bitmap.width;
+      canvas.height = bitmap.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(bitmap, 0, 0);
+      const pngBlob = await canvasToBlob(canvas, 'image/png');
+      if (!pngBlob) throw new Error('PNG blob oluşturulamadı');
+      return pngBlob;
+    }
+
     function showClipboardSupportInfo() {
       if (!window.isSecureContext) {
         alert('Görsel kopyalama için site HTTPS altında açılmalıdır.');
@@ -748,9 +760,40 @@
         return brandedImageBlobCache.get(cacheKey);
       }
 
-      // Kalıcı cache yalnızca jpeg brandedImageUrl alanında tutuluyor.
-      // jpeg istendiğinde önce bunu kullan, png için mevcut canvas'tan üret.
-      if (format === 'jpeg' && item.brandedImageUrl) {
+      // PNG isteniyorsa önce kalıcı JPEG cache'i kullan / oluştur.
+      // Böylece kopyalama da indirme ile aynı şekilde tek sefer üretim + Storage kaydı yapar.
+      if (format === 'png') {
+        const jpegCacheKey = getBrandedCacheKey(item, imageUrl, 'jpeg');
+
+        let sourceJpegBlob = brandedImageBlobCache.get(jpegCacheKey) || null;
+
+        if (!sourceJpegBlob) {
+          if (item.brandedImageUrl) {
+            if (buttonEl) buttonEl.textContent = loadingText;
+            try {
+              sourceJpegBlob = await blobFromUrl(item.brandedImageUrl);
+              brandedImageBlobCache.set(jpegCacheKey, sourceJpegBlob);
+            } catch (e) {
+              item.brandedImageUrl = null;
+              item.brandedImagePath = null;
+            }
+          }
+        }
+
+        if (!sourceJpegBlob) {
+          sourceJpegBlob = await getOrCreateBrandedBlob(item, imageUrl, buttonEl, loadingText, 'jpeg');
+        }
+
+        if (!sourceJpegBlob) throw new Error('Kaynak görsel hazırlanamadı');
+
+        if (buttonEl) buttonEl.textContent = loadingText;
+        const pngBlob = await imageBlobToPngBlob(sourceJpegBlob);
+        brandedImageBlobCache.set(cacheKey, pngBlob);
+        return pngBlob;
+      }
+
+      // JPEG için önce oturum cache'i, sonra kalıcı brandedImageUrl kullan.
+      if (item.brandedImageUrl) {
         if (buttonEl) buttonEl.textContent = loadingText;
         try {
           const cachedBlob = await blobFromUrl(item.brandedImageUrl);
@@ -765,37 +808,31 @@
       if (buttonEl) buttonEl.textContent = loadingText;
       const canvas = await generateBrandedImage(item, imageUrl);
 
-      const outputType = format === 'png' ? 'image/png' : 'image/jpeg';
-      const quality = format === 'png' ? undefined : 0.92;
-      const blob = await canvasToBlob(canvas, outputType, quality);
-
+      const blob = await canvasToBlob(canvas, 'image/jpeg', 0.92);
       if (!blob) throw new Error('Blob oluşturulamadı');
 
       brandedImageBlobCache.set(cacheKey, blob);
 
-      // Yalnızca jpeg için Storage kalıcı cache yaz.
-      if (format === 'jpeg') {
-        try {
-          if (buttonEl) buttonEl.textContent = 'Kaydediliyor...';
-          const path = `branded/${item.id}-${item.code || 'derslik'}.jpg`;
-          const storageRef = ref(storage, path);
-          await uploadBytes(storageRef, blob);
-          const downloadUrl = await getDownloadURL(storageRef);
-          await updateDoc(doc(db, 'classrooms', item.id), {
-            brandedImageUrl: downloadUrl,
-            brandedImagePath: path
-          });
-          item.brandedImageUrl = downloadUrl;
-          item.brandedImagePath = path;
+      try {
+        if (buttonEl) buttonEl.textContent = 'Kaydediliyor...';
+        const path = `branded/${item.id}-${item.code || 'derslik'}.jpg`;
+        const storageRef = ref(storage, path);
+        await uploadBytes(storageRef, blob);
+        const downloadUrl = await getDownloadURL(storageRef);
+        await updateDoc(doc(db, 'classrooms', item.id), {
+          brandedImageUrl: downloadUrl,
+          brandedImagePath: path
+        });
+        item.brandedImageUrl = downloadUrl;
+        item.brandedImagePath = path;
 
-          const cached = classrooms.find(c => c.id === item.id);
-          if (cached) {
-            cached.brandedImageUrl = downloadUrl;
-            cached.brandedImagePath = path;
-          }
-        } catch (uploadErr) {
-          console.warn('Branded görsel Storage\'a yüklenemedi:', uploadErr);
+        const cached = classrooms.find(c => c.id === item.id);
+        if (cached) {
+          cached.brandedImageUrl = downloadUrl;
+          cached.brandedImagePath = path;
         }
+      } catch (uploadErr) {
+        console.warn('Branded görsel Storage\'a yüklenemedi:', uploadErr);
       }
 
       return blob;
