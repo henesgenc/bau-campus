@@ -1,0 +1,457 @@
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Haritada Göster</title>
+  <link rel="icon" type="image/png" href="./logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/konva@9/konva.min.js"></script>
+  <style>
+    :root{--bg:#f4f6fb;--surface:#fff;--text:#142033;--muted:#64748b;--border:#dbe2ea;--primary:#1a56db;--primary-soft:#eaf1ff;--shadow:0 12px 40px rgba(15,23,42,.08);--radius:18px}
+    *{box-sizing:border-box} body{margin:0;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
+    .container{width:min(1320px,calc(100% - 32px));margin:0 auto}
+    .topbar{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.9);backdrop-filter:blur(12px);border-bottom:1px solid rgba(219,226,234,.85)}
+    .topbar-inner{min-height:72px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+    .brand{display:flex;align-items:center;gap:12px}.brand img{width:42px;height:42px;object-fit:contain}
+    .brand h1{margin:0;font-size:18px}.brand p{margin:2px 0 0;color:var(--muted);font-size:12px}
+    .layout{display:grid;grid-template-columns:340px 1fr;gap:14px;padding:18px 0 28px}
+    .card,.canvas-shell{background:#fff;border:1px solid var(--border);border-radius:24px;box-shadow:var(--shadow)}
+    .card{padding:18px}.card h2,.card h3{margin:0 0 14px}
+    .field{display:grid;gap:6px}.field label{font-size:12px;font-weight:700;color:#475467;text-transform:uppercase;letter-spacing:.04em}
+    .input,.select,.btn,.ghost{height:44px;border-radius:12px;font:inherit}
+    .input,.select{width:100%;border:1px solid var(--border);background:#fff;padding:0 12px;outline:none}
+    .input:focus,.select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(26,86,219,.12)}
+    .btn{background:var(--primary);border:none;color:#fff;padding:0 14px;font-weight:700;cursor:pointer}
+    .ghost{background:#fff;border:1px solid var(--border);padding:0 14px;font-weight:700;cursor:pointer;color:var(--text)}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .help{font-size:13px;color:var(--muted);line-height:1.6}
+    .routeBox{padding:14px;border-radius:16px;background:#f8fbff;border:1px solid #d7e6ff;font-size:14px;line-height:1.7}
+    .canvas-shell{padding:12px}
+    .canvas-toolbar{display:flex;gap:8px;flex-wrap:wrap;padding-bottom:10px}
+    #stageWrap{overflow:auto;border:1px solid var(--border);border-radius:18px;background:#f7f9fc}
+    #mapStage{min-height:560px}
+    .legend{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+    .legend span{display:inline-flex;align-items:center;gap:6px;background:#f5f8fc;border:1px solid var(--border);padding:6px 10px;border-radius:999px;font-size:12px;color:#425168}
+    .dot{width:10px;height:10px;border-radius:999px;background:#111827}
+    @media (max-width:1050px){.layout{grid-template-columns:1fr}}
+    @media (max-width:700px){.grid2{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <div class="brand">
+        <img src="./logo.png" alt="Logo" />
+        <div>
+          <h1 id="siteTitle">Bahçeşehir Üniversitesi Derslikleri</h1>
+          <p id="siteSubtitle">Haritada Göster</p>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <a class="ghost" href="./index.html" style="display:inline-flex;align-items:center;text-decoration:none">Siteye Dön</a>
+        <a class="ghost" href="./admin.html" style="display:inline-flex;align-items:center;text-decoration:none">Yönetim Paneli</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="layout">
+      <aside class="card">
+        <h2>Yol Bulma</h2>
+        <div class="field">
+          <label>Hedef Sınıf</label>
+          <select id="classroomSelect" class="select"><option value="">Sınıf seçin</option></select>
+        </div>
+        <div class="grid2" style="margin-top:12px">
+          <div class="field">
+            <label>Başlangıç Türü</label>
+            <select id="startMode" class="select">
+              <option value="entrance">En yakın giriş</option>
+              <option value="stairs">Merdiven</option>
+              <option value="elevator">Asansör</option>
+              <option value="manual">Elle nokta seç</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Erişilebilir Rota</label>
+            <select id="accessibleOnly" class="select">
+              <option value="false">Hayır</option>
+              <option value="true">Evet</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid2" style="margin-top:12px">
+          <div class="field">
+            <label>Kampüs</label>
+            <select id="campusSelect" class="select"><option value="all">Tümü</option></select>
+          </div>
+          <div class="field">
+            <label>Blok</label>
+            <select id="blockSelect" class="select"><option value="all">Tümü</option></select>
+          </div>
+        </div>
+        <div class="grid2" style="margin-top:14px">
+          <button id="drawRouteBtn" class="btn">Rota Çiz</button>
+          <button id="clearRouteBtn" class="ghost">Temizle</button>
+        </div>
+
+        <div style="margin-top:18px">
+          <h3>Bilgi</h3>
+          <div id="routeInfo" class="routeBox">Bir sınıf seçin. Sistem ilgili kat planını açıp hedefi vurgulayacaktır.</div>
+        </div>
+
+        <div class="legend">
+          <span><i class="dot" style="background:#ef4444"></i> Rota</span>
+          <span><i class="dot" style="background:#1d4ed8"></i> Rota düğümü</span>
+          <span><i class="dot" style="background:#16a34a"></i> Hedef sınıf</span>
+          <span><i class="dot" style="background:#f97316"></i> Başlangıç</span>
+        </div>
+
+        <p class="help" style="margin-top:16px">
+          Elle başlangıç modu seçilirse harita üzerinde bir rota noktasına tıklayarak başlangıç belirleyebilirsiniz.
+          Katlar arası geçişlerde aynı bağlantı anahtarına sahip düğümler otomatik eşleştirilir.
+        </p>
+      </aside>
+
+      <section class="canvas-shell">
+        <div class="canvas-toolbar">
+          <button id="zoomInBtn" class="ghost">Yakınlaştır +</button>
+          <button id="zoomOutBtn" class="ghost">Uzaklaştır −</button>
+          <button id="fitBtn" class="ghost">Sığdır</button>
+        </div>
+        <div id="stageWrap">
+          <div id="mapStage"></div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import { collection, getDocs, getDoc, query, orderBy, doc } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js';
+
+    const $ = s => document.querySelector(s);
+    let campuses = [], blocks = [], classrooms = [], floors = [];
+    let currentFloor = null, currentElements = [], currentNodes = [], currentEdges = [];
+    let stage, bgLayer, edgeLayer, elementLayer, nodeLayer, routeLayer;
+    let scale = 1, manualStartNodeId = null, highlightedClassroomId = null, currentRoute = [];
+
+    function escapeHtml(str=''){return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+    function params(){ return new URLSearchParams(location.search); }
+
+    function fillFilters() {
+      $('#campusSelect').innerHTML = '<option value="all">Tümü</option>' + campuses.map(c => `<option value="${c.id}">${escapeHtml(c.name || '-')}</option>`).join('');
+      rebuildBlockOptions();
+      $('#classroomSelect').innerHTML = '<option value="">Sınıf seçin</option>' + classrooms
+        .filter(c => c.active !== false)
+        .map(c => `<option value="${c.id}">${escapeHtml(c.code || '-')} • ${escapeHtml(c.blockName || '-')} • ${escapeHtml(c.floor || '-')}</option>`).join('');
+    }
+
+    function rebuildBlockOptions() {
+      const campusId = $('#campusSelect').value;
+      const filtered = blocks.filter(b => campusId === 'all' || b.campusId === campusId);
+      $('#blockSelect').innerHTML = '<option value="all">Tümü</option>' + filtered.map(b => `<option value="${b.id}">${escapeHtml(b.name || '-')}</option>`).join('');
+    }
+
+    function ensureStage() {
+      if (stage) return;
+      stage = new Konva.Stage({ container:'mapStage', width:1400, height:900 });
+      bgLayer = new Konva.Layer(); edgeLayer = new Konva.Layer(); elementLayer = new Konva.Layer(); nodeLayer = new Konva.Layer(); routeLayer = new Konva.Layer();
+      stage.add(bgLayer); stage.add(edgeLayer); stage.add(elementLayer); stage.add(nodeLayer); stage.add(routeLayer);
+    }
+
+    function fitStage() {
+      if (!stage) return;
+      const wrap = $('#stageWrap');
+      scale = Math.min(wrap.clientWidth / stage.width(), 1);
+      stage.scale({ x:scale, y:scale });
+      stage.draw();
+    }
+
+    function floorForClassroom(classroom) {
+      return floors.find(f => f.blockId === classroom.blockId && String(f.name || '').trim() === String(classroom.floor || '').trim())
+          || floors.find(f => f.blockId === classroom.blockId && Number(f.level) === extractFloorNumber(classroom.floor))
+          || floors.find(f => f.blockId === classroom.blockId);
+    }
+
+    function extractFloorNumber(text) {
+      const m = String(text || '').match(/-?\d+/);
+      return m ? Number(m[0]) : 0;
+    }
+
+    async function loadFloorData(floorId) {
+      currentFloor = floors.find(f => f.id === floorId) || null;
+      if (!currentFloor) return;
+      const [elSnap, nodeSnap, edgeSnap] = await Promise.all([
+        getDocs(collection(db, `floors/${floorId}/mapElements`)),
+        getDocs(collection(db, `floors/${floorId}/routeNodes`)),
+        getDocs(collection(db, `floors/${floorId}/routeEdges`)),
+      ]);
+      currentElements = elSnap.docs.map(d => ({ id:d.id, ...d.data() }));
+      currentNodes = nodeSnap.docs.map(d => ({ id:d.id, ...d.data() }));
+      currentEdges = edgeSnap.docs.map(d => ({ id:d.id, ...d.data() }));
+      renderMap();
+    }
+
+    function renderMap() {
+      ensureStage();
+      if (!currentFloor) return;
+      stage.width(Number(currentFloor.width || 1400));
+      stage.height(Number(currentFloor.height || 900));
+
+      bgLayer.destroyChildren();
+      bgLayer.add(new Konva.Rect({ x:0, y:0, width:stage.width(), height:stage.height(), fill:'#ffffff' }));
+      if (currentFloor.backgroundImageUrl) {
+        const imageObj = new Image();
+        imageObj.onload = () => {
+          bgLayer.destroyChildren();
+          bgLayer.add(new Konva.Rect({ x:0, y:0, width:stage.width(), height:stage.height(), fill:'#ffffff' }));
+          bgLayer.add(new Konva.Image({ x:0, y:0, width:stage.width(), height:stage.height(), image:imageObj, opacity:.35, listening:false }));
+          bgLayer.draw();
+        };
+        imageObj.src = currentFloor.backgroundImageUrl;
+      } else {
+        bgLayer.draw();
+      }
+
+      edgeLayer.destroyChildren();
+      currentEdges.forEach(edge => {
+        const a = currentNodes.find(n => n.id === edge.fromNodeId);
+        const b = currentNodes.find(n => n.id === edge.toNodeId);
+        if (!a || !b) return;
+        edgeLayer.add(new Konva.Line({ points:[a.x,a.y,b.x,b.y], stroke:'#1d4ed8', strokeWidth:3, lineCap:'round' }));
+      });
+      edgeLayer.draw();
+
+      elementLayer.destroyChildren();
+      currentElements.forEach(item => {
+        const isTarget = item.classroomId && item.classroomId === highlightedClassroomId;
+        const color = isTarget ? '#16a34a' : ({
+          corridor:'#dbeafe', classroom:'#dcfce7', toilet:'#fae8ff', stairs:'#fed7aa', elevator:'#fde68a', entrance:'#bfdbfe', exit:'#fecaca', office:'#e9d5ff', custom:'#e5e7eb'
+        })[item.type] || '#e5e7eb';
+        const group = new Konva.Group({ x:item.x || 0, y:item.y || 0 });
+        group.add(new Konva.Rect({ width:item.width || 160, height:item.height || 80, fill:color, stroke:isTarget ? '#166534' : '#475467', strokeWidth:isTarget ? 3 : 1.2, cornerRadius:12 }));
+        group.add(new Konva.Text({
+          x:10,y:10,width:(item.width||160)-20,height:(item.height||80)-20,text:item.label||item.type||'Öğe',
+          fontSize:16, fill:'#111827', fontStyle:'700', align:'center', verticalAlign:'middle'
+        }));
+        elementLayer.add(group);
+      });
+      elementLayer.draw();
+
+      nodeLayer.destroyChildren();
+      currentNodes.forEach(node => {
+        const isManualSelectable = $('#startMode').value === 'manual';
+        const isManualStart = manualStartNodeId === node.id;
+        const group = new Konva.Group({ x:node.x || 0, y:node.y || 0 });
+        const circle = new Konva.Circle({ radius:12, fill:isManualStart ? '#f97316' : '#1d4ed8', stroke:'#fff', strokeWidth:2 });
+        group.add(circle);
+        group.add(new Konva.Text({ x:16, y:-8, text:node.label || 'Nokta', fontSize:12, fill:'#0f172a', fontStyle:'700' }));
+        if (isManualSelectable) {
+          group.on('click tap', () => {
+            manualStartNodeId = node.id;
+            $('#routeInfo').textContent = `Başlangıç noktası seçildi: ${node.label || node.id}`;
+            renderMap();
+          });
+        }
+        nodeLayer.add(group);
+      });
+      nodeLayer.draw();
+
+      renderRoute();
+      fitStage();
+    }
+
+    function renderRoute() {
+      routeLayer.destroyChildren();
+      if (!currentRoute.length) { routeLayer.draw(); return; }
+      for (let i=0;i<currentRoute.length-1;i++) {
+        const a = currentNodes.find(n => n.id === currentRoute[i]);
+        const b = currentNodes.find(n => n.id === currentRoute[i+1]);
+        if (!a || !b) continue;
+        routeLayer.add(new Konva.Line({ points:[a.x,a.y,b.x,b.y], stroke:'#ef4444', strokeWidth:6, lineCap:'round', lineJoin:'round' }));
+      }
+      routeLayer.draw();
+    }
+
+    function nodeForTargetClassroom(classroomId) {
+      const direct = currentElements.find(e => e.classroomId === classroomId);
+      if (!direct) return null;
+      const center = { x: (direct.x || 0) + (direct.width || 160)/2, y:(direct.y || 0) + (direct.height || 80)/2 };
+      let best = null, dist = Infinity;
+      for (const node of currentNodes) {
+        const d = Math.hypot((node.x||0)-center.x, (node.y||0)-center.y);
+        if (d < dist) { dist = d; best = node; }
+      }
+      return best;
+    }
+
+    function chooseStartNode(mode, accessibleOnly) {
+      if (mode === 'manual') return currentNodes.find(n => n.id === manualStartNodeId) || null;
+      const candidates = currentNodes.filter(n => {
+        if (accessibleOnly && n.accessible === false) return false;
+        if (mode === 'entrance') return String(n.label || '').toLowerCase().includes('giriş') || String(n.kind || '').includes('entrance');
+        if (mode === 'stairs') return String(n.label || '').toLowerCase().includes('merdiven') || String(n.linkKey || '').toLowerCase().includes('stair');
+        if (mode === 'elevator') return String(n.label || '').toLowerCase().includes('asansör') || String(n.linkKey || '').toLowerCase().includes('elev');
+        return true;
+      });
+      return candidates[0] || currentNodes[0] || null;
+    }
+
+    function graphFromCurrentFloor(accessibleOnly) {
+      const map = new Map(currentNodes.map(n => [n.id, []]));
+      currentEdges.forEach(e => {
+        if (accessibleOnly && e.accessible === false) return;
+        if (!map.has(e.fromNodeId) || !map.has(e.toNodeId)) return;
+        map.get(e.fromNodeId).push({ to:e.toNodeId, weight:Number(e.distance || 1) });
+        map.get(e.toNodeId).push({ to:e.fromNodeId, weight:Number(e.distance || 1) });
+      });
+      return map;
+    }
+
+    function dijkstra(graph, startId, endId) {
+      const dist = new Map(), prev = new Map(), unvisited = new Set(graph.keys());
+      for (const id of graph.keys()) dist.set(id, Infinity);
+      dist.set(startId, 0);
+      while (unvisited.size) {
+        let current = null, min = Infinity;
+        for (const id of unvisited) { if (dist.get(id) < min) { min = dist.get(id); current = id; } }
+        if (current === null) break;
+        unvisited.delete(current);
+        if (current === endId) break;
+        for (const edge of graph.get(current) || []) {
+          const alt = dist.get(current) + edge.weight;
+          if (alt < dist.get(edge.to)) { dist.set(edge.to, alt); prev.set(edge.to, current); }
+        }
+      }
+      if (!prev.has(endId) && startId !== endId) return { path: [], distance: Infinity };
+      const path = [endId];
+      let cur = endId;
+      while (cur !== startId) { cur = prev.get(cur); if (!cur) break; path.unshift(cur); }
+      return { path, distance: dist.get(endId) };
+    }
+
+    async function drawRoute() {
+      const classroomId = $('#classroomSelect').value;
+      if (!classroomId) return alert('Önce bir sınıf seçin.');
+      const classroom = classrooms.find(c => c.id === classroomId);
+      if (!classroom) return;
+      const floor = floorForClassroom(classroom);
+      if (!floor) return alert('Bu sınıfa ait kat planı bulunamadı.');
+      highlightedClassroomId = classroomId;
+      if (!currentFloor || currentFloor.id !== floor.id) await loadFloorData(floor.id);
+      const accessibleOnly = $('#accessibleOnly').value === 'true';
+      const targetNode = nodeForTargetClassroom(classroomId);
+      if (!targetNode) {
+        $('#routeInfo').textContent = 'Hedef sınıf haritada bulundu ancak yakın rota düğümü tanımlı değil.';
+        renderMap();
+        return;
+      }
+      const startNode = chooseStartNode($('#startMode').value, accessibleOnly);
+      if (!startNode) {
+        $('#routeInfo').textContent = 'Başlangıç düğümü bulunamadı.';
+        renderMap();
+        return;
+      }
+      const graph = graphFromCurrentFloor(accessibleOnly);
+      const { path, distance } = dijkstra(graph, startNode.id, targetNode.id);
+      currentRoute = path;
+      renderMap();
+      $('#routeInfo').innerHTML = path.length
+        ? `<strong>${escapeHtml(classroom.code || '-')}</strong> için rota oluşturuldu.<br>Kat: ${escapeHtml(floor.name || '-')} • Blok: ${escapeHtml(floor.blockName || '-')}<br>Toplam mesafe: yaklaşık <strong>${Math.round(distance)}</strong> px birim.`
+        : 'Bu kat içinde başlangıç ve hedef arasında bir rota bulunamadı. Rota düğümlerini ve bağlantıları kontrol edin.';
+    }
+
+    function clearRoute() {
+      currentRoute = [];
+      manualStartNodeId = null;
+      highlightedClassroomId = null;
+      $('#routeInfo').textContent = 'Rota temizlendi.';
+      renderMap();
+    }
+
+    async function init() {
+      const settingsSnap = await getDoc(doc(db, 'settings', 'site')).catch(() => null);
+      if (settingsSnap?.exists()) {
+        const s = settingsSnap.data();
+        $('#siteTitle').textContent = s.title || 'Bahçeşehir Üniversitesi Derslikleri';
+        $('#siteSubtitle').textContent = s.subtitle || 'Haritada Göster';
+      }
+      const safeGet = async (path, ord='name') => {
+        try { return await getDocs(query(collection(db, path), orderBy(ord))); }
+        catch { return await getDocs(collection(db, path)); }
+      };
+      const [campSnap, blockSnap, classSnap, floorSnap] = await Promise.all([
+        safeGet('campuses', 'sortOrder'),
+        safeGet('blocks', 'sortOrder'),
+        safeGet('classrooms', 'code'),
+        safeGet('floors', 'level')
+      ]);
+      campuses = campSnap.docs.map(d => ({ id:d.id, ...d.data() }));
+      blocks = blockSnap.docs.map(d => ({ id:d.id, ...d.data() }));
+      classrooms = classSnap.docs.map(d => ({ id:d.id, ...d.data() }));
+      floors = floorSnap.docs.map(d => ({ id:d.id, ...d.data() }));
+      const blockMap = new Map(blocks.map(b => [b.id, b]));
+      classrooms.forEach(c => { c.blockName = c.blockName || blockMap.get(c.blockId)?.name || '-'; });
+
+      fillFilters();
+      const classroomId = params().get('classroom');
+      if (classroomId && classrooms.some(c => c.id === classroomId)) {
+        $('#classroomSelect').value = classroomId;
+        const classroom = classrooms.find(c => c.id === classroomId);
+        const floor = floorForClassroom(classroom);
+        if (floor) {
+          $('#campusSelect').value = classroom.campusId || 'all';
+          rebuildBlockOptions();
+          $('#blockSelect').value = classroom.blockId || 'all';
+          await loadFloorData(floor.id);
+          highlightedClassroomId = classroomId;
+          renderMap();
+          $('#routeInfo').innerHTML = `<strong>${escapeHtml(classroom.code || '-')}</strong> seçildi. Rota çizmek için başlangıç türünü seçip butona basın.`;
+        }
+      } else {
+        ensureStage(); fitStage();
+      }
+    }
+
+    $('#campusSelect').addEventListener('change', () => {
+      rebuildBlockOptions();
+      const campusId = $('#campusSelect').value;
+      $('#classroomSelect').innerHTML = '<option value="">Sınıf seçin</option>' + classrooms.filter(c => campusId === 'all' || c.campusId === campusId)
+        .map(c => `<option value="${c.id}">${escapeHtml(c.code || '-')} • ${escapeHtml(c.blockName || '-')} • ${escapeHtml(c.floor || '-')}</option>`).join('');
+    });
+    $('#blockSelect').addEventListener('change', () => {
+      const campusId = $('#campusSelect').value, blockId = $('#blockSelect').value;
+      $('#classroomSelect').innerHTML = '<option value="">Sınıf seçin</option>' + classrooms.filter(c => (campusId === 'all' || c.campusId === campusId) && (blockId === 'all' || c.blockId === blockId))
+        .map(c => `<option value="${c.id}">${escapeHtml(c.code || '-')} • ${escapeHtml(c.blockName || '-')} • ${escapeHtml(c.floor || '-')}</option>`).join('');
+    });
+    $('#classroomSelect').addEventListener('change', async () => {
+      const classroom = classrooms.find(c => c.id === $('#classroomSelect').value);
+      if (!classroom) return;
+      highlightedClassroomId = classroom.id;
+      const floor = floorForClassroom(classroom);
+      if (floor) await loadFloorData(floor.id);
+      renderMap();
+      history.replaceState({}, '', `./map.html?classroom=${encodeURIComponent(classroom.id)}`);
+      $('#routeInfo').innerHTML = `<strong>${escapeHtml(classroom.code || '-')}</strong> seçildi. Rota çizmek için butona basın.`;
+    });
+
+    $('#drawRouteBtn').addEventListener('click', drawRoute);
+    $('#clearRouteBtn').addEventListener('click', clearRoute);
+    $('#zoomInBtn').addEventListener('click', () => { scale = Math.min(scale + 0.1, 2); stage?.scale({x:scale,y:scale}); stage?.draw(); });
+    $('#zoomOutBtn').addEventListener('click', () => { scale = Math.max(scale - 0.1, 0.3); stage?.scale({x:scale,y:scale}); stage?.draw(); });
+    $('#fitBtn').addEventListener('click', fitStage);
+    $('#startMode').addEventListener('change', renderMap);
+    window.addEventListener('resize', fitStage);
+
+    init().catch(err => {
+      console.error(err);
+      $('#routeInfo').textContent = 'Harita verileri yüklenemedi. Firebase ayarlarını ve kuralları kontrol edin.';
+    });
+  </script>
+</body>
+</html>
