@@ -1,130 +1,131 @@
-
 <!DOCTYPE html>
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Haritada Göster</title>
   <link rel="icon" type="image/png" href="./logo.png" />
+  <title>Haritada Göster</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/konva@9/konva.min.js"></script>
   <style>
-    :root{--bg:#f4f6fb;--surface:#fff;--text:#142033;--muted:#64748b;--border:#dbe2ea;--primary:#1a56db;--primary-soft:#eaf1ff;--shadow:0 12px 40px rgba(15,23,42,.08);--radius:18px}
-    *{box-sizing:border-box} body{margin:0;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
-    .container{width:min(1320px,calc(100% - 32px));margin:0 auto}
-    .topbar{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.9);backdrop-filter:blur(12px);border-bottom:1px solid rgba(219,226,234,.85)}
-    .topbar-inner{min-height:72px;display:flex;align-items:center;justify-content:space-between;gap:16px}
-    .brand{display:flex;align-items:center;gap:12px}.brand img{width:42px;height:42px;object-fit:contain}
-    .brand h1{margin:0;font-size:18px}.brand p{margin:2px 0 0;color:var(--muted);font-size:12px}
-    .layout{display:grid;grid-template-columns:340px 1fr;gap:14px;padding:18px 0 28px}
-    .card,.canvas-shell{background:#fff;border:1px solid var(--border);border-radius:24px;box-shadow:var(--shadow)}
-    .card{padding:18px}.card h2,.card h3{margin:0 0 14px}
-    .field{display:grid;gap:6px}.field label{font-size:12px;font-weight:700;color:#475467;text-transform:uppercase;letter-spacing:.04em}
-    .input,.select,.btn,.ghost{height:44px;border-radius:12px;font:inherit}
-    .input,.select{width:100%;border:1px solid var(--border);background:#fff;padding:0 12px;outline:none}
-    .input:focus,.select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(26,86,219,.12)}
-    .btn{background:var(--primary);border:none;color:#fff;padding:0 14px;font-weight:700;cursor:pointer}
-    .ghost{background:#fff;border:1px solid var(--border);padding:0 14px;font-weight:700;cursor:pointer;color:var(--text)}
+    :root{
+      --bg:#f0f2f7;--surface:#fff;--muted:#7a869a;--text:#0f1923;--border:#e2e6ed;
+      --primary:#1a56db;--primary-soft:#e8effe;--shadow-sm:0 1px 3px rgba(15,25,35,.07),0 4px 12px rgba(15,25,35,.05);--radius:18px;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
+    .container{width:min(1320px,calc(100% - 40px));margin:0 auto}
+    .topbar{background:rgba(255,255,255,.88);backdrop-filter:blur(16px);border-bottom:1px solid rgba(226,230,237,.8);position:sticky;top:0;z-index:20}
+    .topbar-inner{height:68px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+    .brand{display:flex;align-items:center;gap:12px}
+    .brand-logo{width:38px;height:38px;object-fit:contain;display:block}
+    .brand-text h1{font-size:17px;font-weight:700;letter-spacing:-.01em;line-height:1.2}
+    .brand-text p{font-size:12px;color:var(--muted);margin-top:1px}
+    .nav a{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:10px;border:1px solid var(--border);background:#fff;color:var(--muted);text-decoration:none;font-size:13.5px;font-weight:600}
+    .layout{display:grid;grid-template-columns:360px 1fr;gap:16px;padding:24px 0 40px}
+    .card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm)}
+    .card-header{padding:18px 20px;border-bottom:1px solid var(--border)}
+    .card-header h2{font-size:18px;font-weight:700}
+    .card-header p{font-size:13px;color:var(--muted);margin-top:4px}
+    .card-body{padding:18px 20px}
+    .field{margin-bottom:14px}
+    label{display:block;margin-bottom:7px;font-size:12.5px;font-weight:700;color:#344054;letter-spacing:.01em;text-transform:uppercase}
+    input,select{width:100%;border:1px solid var(--border);border-radius:11px;background:#f7f8fb;padding:11px 13px;font-size:14px;font-family:'DM Sans',sans-serif;outline:none;color:var(--text);appearance:none}
+    select{
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23b0b9c8' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat:no-repeat;background-position:right 10px center;padding-right:36px
+    }
+    input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(26,86,219,.1);background:#fff}
+    .btn{border:none;border-radius:11px;padding:10px 16px;font-size:13.5px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;display:inline-flex;align-items:center;gap:6px;text-decoration:none}
+    .btn-primary{background:var(--primary);color:#fff}.btn-ghost{background:#fff;border:1px solid var(--border);color:#344054}
     .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    .help{font-size:13px;color:var(--muted);line-height:1.6}
-    .routeBox{padding:14px;border-radius:16px;background:#f8fbff;border:1px solid #d7e6ff;font-size:14px;line-height:1.7}
-    .canvas-shell{padding:12px}
-    .canvas-toolbar{display:flex;gap:8px;flex-wrap:wrap;padding-bottom:10px}
-    #stageWrap{overflow:auto;border:1px solid var(--border);border-radius:18px;background:#f7f9fc}
-    #mapStage{min-height:560px}
-    .legend{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-    .legend span{display:inline-flex;align-items:center;gap:6px;background:#f5f8fc;border:1px solid var(--border);padding:6px 10px;border-radius:999px;font-size:12px;color:#425168}
+    .canvas-shell{background:#fff;border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm);padding:14px}
+    .canvas-toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+    #stageWrap{overflow:auto;border:1px solid var(--border);border-radius:14px;background:#f7f8fc;min-height:680px}
+    #mapStage{min-height:680px}
+    .routeBox{padding:14px;border-radius:14px;background:#f7f8fb;border:1px solid var(--border);font-size:14px;line-height:1.7;color:#475467}
+    .legend{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+    .legend span{display:inline-flex;align-items:center;gap:6px;background:#f5f7fb;border:1px solid var(--border);padding:6px 10px;border-radius:999px;font-size:12px;color:#475467}
     .dot{width:10px;height:10px;border-radius:999px;background:#111827}
-    @media (max-width:1050px){.layout{grid-template-columns:1fr}}
-    @media (max-width:700px){.grid2{grid-template-columns:1fr}}
+    @media(max-width:1080px){.layout{grid-template-columns:1fr}}
+    @media(max-width:640px){.grid2{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
   <header class="topbar">
     <div class="container topbar-inner">
       <div class="brand">
-        <img src="./logo.png" alt="Logo" />
-        <div>
+        <img class="brand-logo" src="./logo.png" alt="Bahçeşehir Üniversitesi logosu" />
+        <div class="brand-text">
           <h1 id="siteTitle">Bahçeşehir Üniversitesi Derslikleri</h1>
           <p id="siteSubtitle">Haritada Göster</p>
         </div>
       </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <a class="ghost" href="./index.html" style="display:inline-flex;align-items:center;text-decoration:none">Siteye Dön</a>
-        <a class="ghost" href="./admin.html" style="display:inline-flex;align-items:center;text-decoration:none">Yönetim Paneli</a>
-      </div>
+      <nav class="nav">
+        <a href="./index.html">Ana Sayfa</a>
+        <a href="./map-admin.html">Harita Yönetimi</a>
+      </nav>
     </div>
   </header>
 
   <main class="container">
     <div class="layout">
       <aside class="card">
-        <h2>Yol Bulma</h2>
-        <div class="field">
-          <label>Hedef Sınıf</label>
-          <select id="classroomSelect" class="select"><option value="">Sınıf seçin</option></select>
+        <div class="card-header">
+          <h2>Yol Bulma</h2>
+          <p>Hedef sınıfı seçin ve rota oluşturun.</p>
         </div>
-        <div class="grid2" style="margin-top:12px">
+        <div class="card-body">
           <div class="field">
-            <label>Başlangıç Türü</label>
-            <select id="startMode" class="select">
-              <option value="entrance">En yakın giriş</option>
-              <option value="stairs">Merdiven</option>
-              <option value="elevator">Asansör</option>
-              <option value="manual">Elle nokta seç</option>
-            </select>
+            <label>Hedef Sınıf</label>
+            <select id="classroomSelect"><option value="">Sınıf seçin</option></select>
+          </div>
+          <div class="grid2">
+            <div class="field">
+              <label>Başlangıç Türü</label>
+              <select id="startMode">
+                <option value="entrance">En yakın giriş</option>
+                <option value="stairs">Merdiven</option>
+                <option value="elevator">Asansör</option>
+                <option value="any">Herhangi bir nokta</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Erişilebilir Rota</label>
+              <select id="accessibleOnly">
+                <option value="false">Kapalı</option>
+                <option value="true">Açık</option>
+              </select>
+            </div>
           </div>
           <div class="field">
-            <label>Erişilebilir Rota</label>
-            <select id="accessibleOnly" class="select">
-              <option value="false">Hayır</option>
-              <option value="true">Evet</option>
-            </select>
+            <label>Görüntülenen Kat</label>
+            <select id="floorView"><option value="">Kat seçin</option></select>
           </div>
-        </div>
-        <div class="grid2" style="margin-top:12px">
-          <div class="field">
-            <label>Kampüs</label>
-            <select id="campusSelect" class="select"><option value="all">Tümü</option></select>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
+            <button id="routeBtn" class="btn btn-primary">Rotayı Oluştur</button>
+            <button id="clearBtn" class="btn btn-ghost">Temizle</button>
           </div>
-          <div class="field">
-            <label>Blok</label>
-            <select id="blockSelect" class="select"><option value="all">Tümü</option></select>
-          </div>
+          <div id="routeBox" class="routeBox" style="margin-top:14px">Henüz rota oluşturulmadı.</div>
         </div>
-        <div class="grid2" style="margin-top:14px">
-          <button id="drawRouteBtn" class="btn">Rota Çiz</button>
-          <button id="clearRouteBtn" class="ghost">Temizle</button>
-        </div>
-
-        <div style="margin-top:18px">
-          <h3>Bilgi</h3>
-          <div id="routeInfo" class="routeBox">Bir sınıf seçin. Sistem ilgili kat planını açıp hedefi vurgulayacaktır.</div>
-        </div>
-
-        <div class="legend">
-          <span><i class="dot" style="background:#ef4444"></i> Rota</span>
-          <span><i class="dot" style="background:#1d4ed8"></i> Rota düğümü</span>
-          <span><i class="dot" style="background:#16a34a"></i> Hedef sınıf</span>
-          <span><i class="dot" style="background:#f97316"></i> Başlangıç</span>
-        </div>
-
-        <p class="help" style="margin-top:16px">
-          Elle başlangıç modu seçilirse harita üzerinde bir rota noktasına tıklayarak başlangıç belirleyebilirsiniz.
-          Katlar arası geçişlerde aynı bağlantı anahtarına sahip düğümler otomatik eşleştirilir.
-        </p>
       </aside>
 
       <section class="canvas-shell">
         <div class="canvas-toolbar">
-          <button id="zoomInBtn" class="ghost">Yakınlaştır +</button>
-          <button id="zoomOutBtn" class="ghost">Uzaklaştır −</button>
-          <button id="fitBtn" class="ghost">Sığdır</button>
+          <button id="zoomInBtn" class="btn btn-ghost">Yakınlaştır +</button>
+          <button id="zoomOutBtn" class="btn btn-ghost">Uzaklaştır −</button>
+          <button id="fitBtn" class="btn btn-ghost">Sığdır</button>
         </div>
         <div id="stageWrap">
           <div id="mapStage"></div>
+        </div>
+        <div class="legend">
+          <span><i class="dot" style="background:#067647"></i> Giriş</span>
+          <span><i class="dot" style="background:#7c3aed"></i> Merdiven</span>
+          <span><i class="dot" style="background:#db2777"></i> Asansör</span>
+          <span><i class="dot" style="background:#1a56db"></i> Rota Noktası</span>
         </div>
       </section>
     </div>
@@ -134,256 +135,24 @@
     import { db } from './firebase-config.js';
     import { collection, getDocs, getDoc, query, orderBy, doc } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js';
 
-    const $ = s => document.querySelector(s);
-    let campuses = [], blocks = [], classrooms = [], floors = [];
-    let currentFloor = null, currentElements = [], currentNodes = [], currentEdges = [];
-    let stage, bgLayer, edgeLayer, elementLayer, nodeLayer, routeLayer;
-    let scale = 1, manualStartNodeId = null, highlightedClassroomId = null, currentRoute = [];
+    const $ = id => document.getElementById(id);
+    const params = new URLSearchParams(location.search);
 
-    function escapeHtml(str=''){return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
-    function params(){ return new URLSearchParams(location.search); }
+    let campuses = [], blocks = [], classrooms = [], floors = [], settings = {};
+    let floorMaps = new Map();
+    let stage = null, bgLayer = null, edgeLayer = null, elementLayer = null, nodeLayer = null;
+    let currentFloorId = null;
+    let highlightedClassroomId = null;
+    let currentPathNodes = [];
 
-    function fillFilters() {
-      $('#campusSelect').innerHTML = '<option value="all">Tümü</option>' + campuses.map(c => `<option value="${c.id}">${escapeHtml(c.name || '-')}</option>`).join('');
-      rebuildBlockOptions();
-      $('#classroomSelect').innerHTML = '<option value="">Sınıf seçin</option>' + classrooms
-        .filter(c => c.active !== false)
-        .map(c => `<option value="${c.id}">${escapeHtml(c.code || '-')} • ${escapeHtml(c.blockName || '-')} • ${escapeHtml(c.floor || '-')}</option>`).join('');
+    function escapeHtml(str='') {
+      return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
     }
 
-    function rebuildBlockOptions() {
-      const campusId = $('#campusSelect').value;
-      const filtered = blocks.filter(b => campusId === 'all' || b.campusId === campusId);
-      $('#blockSelect').innerHTML = '<option value="all">Tümü</option>' + filtered.map(b => `<option value="${b.id}">${escapeHtml(b.name || '-')}</option>`).join('');
-    }
-
-    function ensureStage() {
-      if (stage) return;
-      stage = new Konva.Stage({ container:'mapStage', width:1400, height:900 });
-      bgLayer = new Konva.Layer(); edgeLayer = new Konva.Layer(); elementLayer = new Konva.Layer(); nodeLayer = new Konva.Layer(); routeLayer = new Konva.Layer();
-      stage.add(bgLayer); stage.add(edgeLayer); stage.add(elementLayer); stage.add(nodeLayer); stage.add(routeLayer);
-    }
-
-    function fitStage() {
-      if (!stage) return;
-      const wrap = $('#stageWrap');
-      scale = Math.min(wrap.clientWidth / stage.width(), 1);
-      stage.scale({ x:scale, y:scale });
-      stage.draw();
-    }
-
-    function floorForClassroom(classroom) {
-      return floors.find(f => f.blockId === classroom.blockId && String(f.name || '').trim() === String(classroom.floor || '').trim())
-          || floors.find(f => f.blockId === classroom.blockId && Number(f.level) === extractFloorNumber(classroom.floor))
-          || floors.find(f => f.blockId === classroom.blockId);
-    }
-
-    function extractFloorNumber(text) {
-      const m = String(text || '').match(/-?\d+/);
-      return m ? Number(m[0]) : 0;
-    }
-
-    async function loadFloorData(floorId) {
-      currentFloor = floors.find(f => f.id === floorId) || null;
-      if (!currentFloor) return;
-      const [elSnap, nodeSnap, edgeSnap] = await Promise.all([
-        getDocs(collection(db, `floors/${floorId}/mapElements`)),
-        getDocs(collection(db, `floors/${floorId}/routeNodes`)),
-        getDocs(collection(db, `floors/${floorId}/routeEdges`)),
-      ]);
-      currentElements = elSnap.docs.map(d => ({ id:d.id, ...d.data() }));
-      currentNodes = nodeSnap.docs.map(d => ({ id:d.id, ...d.data() }));
-      currentEdges = edgeSnap.docs.map(d => ({ id:d.id, ...d.data() }));
-      renderMap();
-    }
-
-    function renderMap() {
-      ensureStage();
-      if (!currentFloor) return;
-      stage.width(Number(currentFloor.width || 1400));
-      stage.height(Number(currentFloor.height || 900));
-
-      bgLayer.destroyChildren();
-      bgLayer.add(new Konva.Rect({ x:0, y:0, width:stage.width(), height:stage.height(), fill:'#ffffff' }));
-      if (currentFloor.backgroundImageUrl) {
-        const imageObj = new Image();
-        imageObj.onload = () => {
-          bgLayer.destroyChildren();
-          bgLayer.add(new Konva.Rect({ x:0, y:0, width:stage.width(), height:stage.height(), fill:'#ffffff' }));
-          bgLayer.add(new Konva.Image({ x:0, y:0, width:stage.width(), height:stage.height(), image:imageObj, opacity:.35, listening:false }));
-          bgLayer.draw();
-        };
-        imageObj.src = currentFloor.backgroundImageUrl;
-      } else {
-        bgLayer.draw();
-      }
-
-      edgeLayer.destroyChildren();
-      currentEdges.forEach(edge => {
-        const a = currentNodes.find(n => n.id === edge.fromNodeId);
-        const b = currentNodes.find(n => n.id === edge.toNodeId);
-        if (!a || !b) return;
-        edgeLayer.add(new Konva.Line({ points:[a.x,a.y,b.x,b.y], stroke:'#1d4ed8', strokeWidth:3, lineCap:'round' }));
-      });
-      edgeLayer.draw();
-
-      elementLayer.destroyChildren();
-      currentElements.forEach(item => {
-        const isTarget = item.classroomId && item.classroomId === highlightedClassroomId;
-        const color = isTarget ? '#16a34a' : ({
-          corridor:'#dbeafe', classroom:'#dcfce7', toilet:'#fae8ff', stairs:'#fed7aa', elevator:'#fde68a', entrance:'#bfdbfe', exit:'#fecaca', office:'#e9d5ff', custom:'#e5e7eb'
-        })[item.type] || '#e5e7eb';
-        const group = new Konva.Group({ x:item.x || 0, y:item.y || 0 });
-        group.add(new Konva.Rect({ width:item.width || 160, height:item.height || 80, fill:color, stroke:isTarget ? '#166534' : '#475467', strokeWidth:isTarget ? 3 : 1.2, cornerRadius:12 }));
-        group.add(new Konva.Text({
-          x:10,y:10,width:(item.width||160)-20,height:(item.height||80)-20,text:item.label||item.type||'Öğe',
-          fontSize:16, fill:'#111827', fontStyle:'700', align:'center', verticalAlign:'middle'
-        }));
-        elementLayer.add(group);
-      });
-      elementLayer.draw();
-
-      nodeLayer.destroyChildren();
-      currentNodes.forEach(node => {
-        const isManualSelectable = $('#startMode').value === 'manual';
-        const isManualStart = manualStartNodeId === node.id;
-        const group = new Konva.Group({ x:node.x || 0, y:node.y || 0 });
-        const circle = new Konva.Circle({ radius:12, fill:isManualStart ? '#f97316' : '#1d4ed8', stroke:'#fff', strokeWidth:2 });
-        group.add(circle);
-        group.add(new Konva.Text({ x:16, y:-8, text:node.label || 'Nokta', fontSize:12, fill:'#0f172a', fontStyle:'700' }));
-        if (isManualSelectable) {
-          group.on('click tap', () => {
-            manualStartNodeId = node.id;
-            $('#routeInfo').textContent = `Başlangıç noktası seçildi: ${node.label || node.id}`;
-            renderMap();
-          });
-        }
-        nodeLayer.add(group);
-      });
-      nodeLayer.draw();
-
-      renderRoute();
-      fitStage();
-    }
-
-    function renderRoute() {
-      routeLayer.destroyChildren();
-      if (!currentRoute.length) { routeLayer.draw(); return; }
-      for (let i=0;i<currentRoute.length-1;i++) {
-        const a = currentNodes.find(n => n.id === currentRoute[i]);
-        const b = currentNodes.find(n => n.id === currentRoute[i+1]);
-        if (!a || !b) continue;
-        routeLayer.add(new Konva.Line({ points:[a.x,a.y,b.x,b.y], stroke:'#ef4444', strokeWidth:6, lineCap:'round', lineJoin:'round' }));
-      }
-      routeLayer.draw();
-    }
-
-    function nodeForTargetClassroom(classroomId) {
-      const direct = currentElements.find(e => e.classroomId === classroomId);
-      if (!direct) return null;
-      const center = { x: (direct.x || 0) + (direct.width || 160)/2, y:(direct.y || 0) + (direct.height || 80)/2 };
-      let best = null, dist = Infinity;
-      for (const node of currentNodes) {
-        const d = Math.hypot((node.x||0)-center.x, (node.y||0)-center.y);
-        if (d < dist) { dist = d; best = node; }
-      }
-      return best;
-    }
-
-    function chooseStartNode(mode, accessibleOnly) {
-      if (mode === 'manual') return currentNodes.find(n => n.id === manualStartNodeId) || null;
-      const candidates = currentNodes.filter(n => {
-        if (accessibleOnly && n.accessible === false) return false;
-        if (mode === 'entrance') return String(n.label || '').toLowerCase().includes('giriş') || String(n.kind || '').includes('entrance');
-        if (mode === 'stairs') return String(n.label || '').toLowerCase().includes('merdiven') || String(n.linkKey || '').toLowerCase().includes('stair');
-        if (mode === 'elevator') return String(n.label || '').toLowerCase().includes('asansör') || String(n.linkKey || '').toLowerCase().includes('elev');
-        return true;
-      });
-      return candidates[0] || currentNodes[0] || null;
-    }
-
-    function graphFromCurrentFloor(accessibleOnly) {
-      const map = new Map(currentNodes.map(n => [n.id, []]));
-      currentEdges.forEach(e => {
-        if (accessibleOnly && e.accessible === false) return;
-        if (!map.has(e.fromNodeId) || !map.has(e.toNodeId)) return;
-        map.get(e.fromNodeId).push({ to:e.toNodeId, weight:Number(e.distance || 1) });
-        map.get(e.toNodeId).push({ to:e.fromNodeId, weight:Number(e.distance || 1) });
-      });
-      return map;
-    }
-
-    function dijkstra(graph, startId, endId) {
-      const dist = new Map(), prev = new Map(), unvisited = new Set(graph.keys());
-      for (const id of graph.keys()) dist.set(id, Infinity);
-      dist.set(startId, 0);
-      while (unvisited.size) {
-        let current = null, min = Infinity;
-        for (const id of unvisited) { if (dist.get(id) < min) { min = dist.get(id); current = id; } }
-        if (current === null) break;
-        unvisited.delete(current);
-        if (current === endId) break;
-        for (const edge of graph.get(current) || []) {
-          const alt = dist.get(current) + edge.weight;
-          if (alt < dist.get(edge.to)) { dist.set(edge.to, alt); prev.set(edge.to, current); }
-        }
-      }
-      if (!prev.has(endId) && startId !== endId) return { path: [], distance: Infinity };
-      const path = [endId];
-      let cur = endId;
-      while (cur !== startId) { cur = prev.get(cur); if (!cur) break; path.unshift(cur); }
-      return { path, distance: dist.get(endId) };
-    }
-
-    async function drawRoute() {
-      const classroomId = $('#classroomSelect').value;
-      if (!classroomId) return alert('Önce bir sınıf seçin.');
-      const classroom = classrooms.find(c => c.id === classroomId);
-      if (!classroom) return;
-      const floor = floorForClassroom(classroom);
-      if (!floor) return alert('Bu sınıfa ait kat planı bulunamadı.');
-      highlightedClassroomId = classroomId;
-      if (!currentFloor || currentFloor.id !== floor.id) await loadFloorData(floor.id);
-      const accessibleOnly = $('#accessibleOnly').value === 'true';
-      const targetNode = nodeForTargetClassroom(classroomId);
-      if (!targetNode) {
-        $('#routeInfo').textContent = 'Hedef sınıf haritada bulundu ancak yakın rota düğümü tanımlı değil.';
-        renderMap();
-        return;
-      }
-      const startNode = chooseStartNode($('#startMode').value, accessibleOnly);
-      if (!startNode) {
-        $('#routeInfo').textContent = 'Başlangıç düğümü bulunamadı.';
-        renderMap();
-        return;
-      }
-      const graph = graphFromCurrentFloor(accessibleOnly);
-      const { path, distance } = dijkstra(graph, startNode.id, targetNode.id);
-      currentRoute = path;
-      renderMap();
-      $('#routeInfo').innerHTML = path.length
-        ? `<strong>${escapeHtml(classroom.code || '-')}</strong> için rota oluşturuldu.<br>Kat: ${escapeHtml(floor.name || '-')} • Blok: ${escapeHtml(floor.blockName || '-')}<br>Toplam mesafe: yaklaşık <strong>${Math.round(distance)}</strong> px birim.`
-        : 'Bu kat içinde başlangıç ve hedef arasında bir rota bulunamadı. Rota düğümlerini ve bağlantıları kontrol edin.';
-    }
-
-    function clearRoute() {
-      currentRoute = [];
-      manualStartNodeId = null;
-      highlightedClassroomId = null;
-      $('#routeInfo').textContent = 'Rota temizlendi.';
-      renderMap();
-    }
-
-    async function init() {
-      const settingsSnap = await getDoc(doc(db, 'settings', 'site')).catch(() => null);
-      if (settingsSnap?.exists()) {
-        const s = settingsSnap.data();
-        $('#siteTitle').textContent = s.title || 'Bahçeşehir Üniversitesi Derslikleri';
-        $('#siteSubtitle').textContent = s.subtitle || 'Haritada Göster';
-      }
-      const safeGet = async (path, ord='name') => {
-        try { return await getDocs(query(collection(db, path), orderBy(ord))); }
-        catch { return await getDocs(collection(db, path)); }
+    async function loadData() {
+      const safeGet = async (name, orderField='name') => {
+        try { return await getDocs(query(collection(db, name), orderBy(orderField))); }
+        catch { return await getDocs(collection(db, name)); }
       };
       const [campSnap, blockSnap, classSnap, floorSnap] = await Promise.all([
         safeGet('campuses', 'sortOrder'),
@@ -391,67 +160,377 @@
         safeGet('classrooms', 'code'),
         safeGet('floors', 'level')
       ]);
-      campuses = campSnap.docs.map(d => ({ id:d.id, ...d.data() }));
-      blocks = blockSnap.docs.map(d => ({ id:d.id, ...d.data() }));
-      classrooms = classSnap.docs.map(d => ({ id:d.id, ...d.data() }));
-      floors = floorSnap.docs.map(d => ({ id:d.id, ...d.data() }));
-      const blockMap = new Map(blocks.map(b => [b.id, b]));
-      classrooms.forEach(c => { c.blockName = c.blockName || blockMap.get(c.blockId)?.name || '-'; });
+      campuses = campSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      blocks = blockSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      classrooms = classSnap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b)=>String(a.code||'').localeCompare(String(b.code||''), 'tr'));
+      floors = floorSnap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b)=>Number(a.level||0)-Number(b.level||0)||String(a.name||'').localeCompare(String(b.name||''), 'tr'));
+      try {
+        const setSnap = await getDoc(doc(db, 'settings', 'site'));
+        settings = setSnap.exists() ? setSnap.data() : {};
+      } catch { settings = {}; }
+      $('siteTitle').textContent = settings.title || 'Bahçeşehir Üniversitesi Derslikleri';
+      $('siteSubtitle').textContent = settings.subtitle || 'Haritada Göster';
 
-      fillFilters();
-      const classroomId = params().get('classroom');
-      if (classroomId && classrooms.some(c => c.id === classroomId)) {
-        $('#classroomSelect').value = classroomId;
-        const classroom = classrooms.find(c => c.id === classroomId);
+      $('classroomSelect').innerHTML = '<option value="">Sınıf seçin</option>' + classrooms.map(c => `<option value="${c.id}">${escapeHtml(c.code || '')}</option>`).join('');
+      if (params.get('classroom')) $('classroomSelect').value = params.get('classroom');
+
+      for (const floor of floors) {
+        const [elSnap, nodeSnap, edgeSnap] = await Promise.all([
+          getDocs(collection(db, `floors/${floor.id}/mapElements`)),
+          getDocs(collection(db, `floors/${floor.id}/routeNodes`)),
+          getDocs(collection(db, `floors/${floor.id}/routeEdges`))
+        ]);
+        floorMaps.set(floor.id, {
+          elements: elSnap.docs.map(d => ({ id:d.id, ...d.data() })),
+          nodes: nodeSnap.docs.map(d => ({ id:d.id, floorId:floor.id, ...d.data() })),
+          edges: edgeSnap.docs.map(d => ({ id:d.id, floorId:floor.id, ...d.data() }))
+        });
+      }
+      fillFloorView();
+      const selectedClassroomId = $('classroomSelect').value;
+      if (selectedClassroomId) {
+        const classroom = classrooms.find(c => c.id === selectedClassroomId);
         const floor = floorForClassroom(classroom);
         if (floor) {
-          $('#campusSelect').value = classroom.campusId || 'all';
-          rebuildBlockOptions();
-          $('#blockSelect').value = classroom.blockId || 'all';
-          await loadFloorData(floor.id);
-          highlightedClassroomId = classroomId;
-          renderMap();
-          $('#routeInfo').innerHTML = `<strong>${escapeHtml(classroom.code || '-')}</strong> seçildi. Rota çizmek için başlangıç türünü seçip butona basın.`;
+          currentFloorId = floor.id;
+          $('floorView').value = currentFloorId;
+          drawFloor(currentFloorId);
+          highlightTargetClassroom(classroom.id);
         }
-      } else {
-        ensureStage(); fitStage();
+      } else if (floors[0]) {
+        currentFloorId = floors[0].id;
+        $('floorView').value = currentFloorId;
+        drawFloor(currentFloorId);
       }
     }
 
-    $('#campusSelect').addEventListener('change', () => {
-      rebuildBlockOptions();
-      const campusId = $('#campusSelect').value;
-      $('#classroomSelect').innerHTML = '<option value="">Sınıf seçin</option>' + classrooms.filter(c => campusId === 'all' || c.campusId === campusId)
-        .map(c => `<option value="${c.id}">${escapeHtml(c.code || '-')} • ${escapeHtml(c.blockName || '-')} • ${escapeHtml(c.floor || '-')}</option>`).join('');
-    });
-    $('#blockSelect').addEventListener('change', () => {
-      const campusId = $('#campusSelect').value, blockId = $('#blockSelect').value;
-      $('#classroomSelect').innerHTML = '<option value="">Sınıf seçin</option>' + classrooms.filter(c => (campusId === 'all' || c.campusId === campusId) && (blockId === 'all' || c.blockId === blockId))
-        .map(c => `<option value="${c.id}">${escapeHtml(c.code || '-')} • ${escapeHtml(c.blockName || '-')} • ${escapeHtml(c.floor || '-')}</option>`).join('');
-    });
-    $('#classroomSelect').addEventListener('change', async () => {
-      const classroom = classrooms.find(c => c.id === $('#classroomSelect').value);
-      if (!classroom) return;
-      highlightedClassroomId = classroom.id;
+    function floorForClassroom(classroom) {
+      if (!classroom) return null;
+      return floors.find(f => f.blockId === classroom.blockId && String(f.name || '').trim().toLowerCase() === String(classroom.floor || '').trim().toLowerCase())
+        || floors.find(f => f.blockId === classroom.blockId);
+    }
+
+    function fillFloorView() {
+      $('floorView').innerHTML = floors.map(f => `<option value="${f.id}">${escapeHtml(f.name || '')}</option>`).join('');
+    }
+
+    function ensureStage(width=1400, height=900) {
+      if (!stage) {
+        stage = new Konva.Stage({ container:'mapStage', width, height });
+        bgLayer = new Konva.Layer();
+        edgeLayer = new Konva.Layer();
+        elementLayer = new Konva.Layer();
+        nodeLayer = new Konva.Layer();
+        stage.add(bgLayer); stage.add(edgeLayer); stage.add(elementLayer); stage.add(nodeLayer);
+      } else {
+        stage.width(width);
+        stage.height(height);
+      }
+      bgLayer.destroyChildren(); edgeLayer.destroyChildren(); elementLayer.destroyChildren(); nodeLayer.destroyChildren();
+    }
+
+    function fitStage() {
+      if (!stage) return;
+      const wrap = $('stageWrap');
+      const scale = Math.min((wrap.clientWidth - 24) / (stage.width() || 1400), 1);
+      const baseW = stage.attrs.baseWidth || stage.width();
+      const baseH = stage.attrs.baseHeight || stage.height();
+      stage.scale({ x: scale, y: scale });
+      stage.width(baseW * scale);
+      stage.height(baseH * scale);
+      stage.draw();
+    }
+
+    function elementColor(type='custom') {
+      return ({
+        corridor:'#e8effe', classroom:'#e8f7ee', toilet:'#fff3e7', stairs:'#f2e9ff',
+        elevator:'#fde7ef', entrance:'#dcfae6', exit:'#fee4e2', office:'#eef2ff', custom:'#f3f4f6'
+      })[type] || '#f3f4f6';
+    }
+    function nodeColor(kind='node') {
+      return ({ entrance:'#067647', stairs:'#7c3aed', elevator:'#db2777', node:'#1a56db' })[kind] || '#1a56db';
+    }
+
+    function drawFloor(floorId) {
+      currentFloorId = floorId;
+      const floor = floors.find(f => f.id === floorId);
+      const map = floorMaps.get(floorId) || { elements:[], nodes:[], edges:[] };
+      const width = Number(floor?.width || 1400);
+      const height = Number(floor?.height || 900);
+      ensureStage(width, height);
+      stage.attrs.baseWidth = width;
+      stage.attrs.baseHeight = height;
+
+      bgLayer.add(new Konva.Rect({ x:0, y:0, width, height, fill:'#fff' }));
+      if (floor?.backgroundImageUrl) {
+        const imageObj = new window.Image();
+        imageObj.crossOrigin = 'anonymous';
+        imageObj.onload = () => {
+          bgLayer.destroyChildren();
+          bgLayer.add(new Konva.Rect({ x:0, y:0, width, height, fill:'#fff' }));
+          bgLayer.add(new Konva.Image({ x:0, y:0, width, height, image:imageObj, opacity:0.35, listening:false }));
+          bgLayer.draw();
+        };
+        imageObj.src = floor.backgroundImageUrl;
+      }
+
+      map.edges.forEach(edge => {
+        const from = map.nodes.find(n => n.id === edge.fromNodeId);
+        const to = map.nodes.find(n => n.id === edge.toNodeId);
+        if (!from || !to) return;
+        const inPath = currentPathNodes.length && currentPathNodes.includes(from.id) && currentPathNodes.includes(to.id);
+        edgeLayer.add(new Konva.Line({
+          points:[Number(from.x||0), Number(from.y||0), Number(to.x||0), Number(to.y||0)],
+          stroke: inPath ? '#f59e0b' : (edge.accessible === false ? '#ef4444' : '#1a56db'),
+          strokeWidth: inPath ? 6 : 3,
+          dash: edge.accessible === false ? [8,6] : []
+        }));
+      });
+
+      map.elements.forEach(item => {
+        const group = new Konva.Group({ x:Number(item.x||0), y:Number(item.y||0) });
+        const isTarget = highlightedClassroomId && item.classroomId === highlightedClassroomId;
+        const rect = new Konva.Rect({
+          width:Number(item.width||180), height:Number(item.height||90), cornerRadius:12,
+          fill: isTarget ? '#fde68a' : elementColor(item.type),
+          stroke: isTarget ? '#f59e0b' : '#98a2b3', strokeWidth: isTarget ? 3 : 1.5
+        });
+        const text = new Konva.Text({
+          x:10, y:10, width:Math.max(50, Number(item.width||180)-20),
+          text:item.label || item.type || 'Öğe', fontSize:15, fontFamily:'DM Sans', fontStyle:'700', fill:'#0f1923'
+        });
+        group.add(rect); group.add(text);
+        elementLayer.add(group);
+      });
+
+      map.nodes.forEach(node => {
+        const inPath = currentPathNodes.includes(node.id);
+        const group = new Konva.Group({ x:Number(node.x||0), y:Number(node.y||0) });
+        const circle = new Konva.Circle({
+          radius: inPath ? 14 : 12,
+          fill: inPath ? '#f59e0b' : nodeColor(node.kind),
+          stroke:'#fff', strokeWidth:3
+        });
+        const label = new Konva.Text({ x:16, y:-8, text:node.label || 'Nokta', fontSize:13, fontFamily:'DM Sans', fontStyle:'700', fill:'#0f1923' });
+        group.add(circle); group.add(label);
+        nodeLayer.add(group);
+      });
+
+      bgLayer.draw(); edgeLayer.draw(); elementLayer.draw(); nodeLayer.draw();
+      fitStage();
+    }
+
+    function highlightTargetClassroom(classroomId) {
+      highlightedClassroomId = classroomId;
+      if (currentFloorId) drawFloor(currentFloorId);
+    }
+
+    function buildGraph() {
+      const graph = new Map();
+      const nodeMeta = new Map();
+      floors.forEach(f => {
+        const map = floorMaps.get(f.id) || { nodes:[], edges:[] };
+        map.nodes.forEach(node => {
+          graph.set(node.id, []);
+          nodeMeta.set(node.id, { ...node, floorId: f.id });
+        });
+        map.edges.forEach(edge => {
+          if (!graph.has(edge.fromNodeId) || !graph.has(edge.toNodeId)) return;
+          graph.get(edge.fromNodeId).push({ to: edge.toNodeId, weight: Number(edge.distance || 1), accessible: edge.accessible !== false });
+          graph.get(edge.toNodeId).push({ to: edge.fromNodeId, weight: Number(edge.distance || 1), accessible: edge.accessible !== false });
+        });
+      });
+      const byLinkKey = {};
+      nodeMeta.forEach(node => {
+        if (!node.linkKey) return;
+        byLinkKey[node.linkKey] ||= [];
+        byLinkKey[node.linkKey].push(node);
+      });
+      Object.values(byLinkKey).forEach(nodes => {
+        for (let i=0;i<nodes.length;i++) {
+          for (let j=i+1;j<nodes.length;j++) {
+            const a = nodes[i], b = nodes[j];
+            if (!graph.has(a.id) || !graph.has(b.id)) continue;
+            const accessible = a.accessible !== false && b.accessible !== false;
+            graph.get(a.id).push({ to:b.id, weight:30, accessible });
+            graph.get(b.id).push({ to:a.id, weight:30, accessible });
+          }
+        }
+      });
+      return { graph, nodeMeta };
+    }
+
+    function dijkstra(graph, startId, endId, accessibleOnly=false) {
+      const dist = new Map(), prev = new Map(), visited = new Set();
+      graph.forEach((_, key) => dist.set(key, Infinity));
+      dist.set(startId, 0);
+
+      while (visited.size < graph.size) {
+        let u = null, min = Infinity;
+        dist.forEach((value, key) => {
+          if (!visited.has(key) && value < min) { min = value; u = key; }
+        });
+        if (!u) break;
+        if (u === endId) break;
+        visited.add(u);
+        for (const edge of graph.get(u) || []) {
+          if (accessibleOnly && edge.accessible === false) continue;
+          const alt = dist.get(u) + Number(edge.weight || 1);
+          if (alt < dist.get(edge.to)) {
+            dist.set(edge.to, alt);
+            prev.set(edge.to, u);
+          }
+        }
+      }
+
+      if (!prev.has(endId) && startId !== endId) return null;
+      const path = [endId];
+      let cur = endId;
+      while (cur !== startId) {
+        cur = prev.get(cur);
+        if (!cur) return null;
+        path.unshift(cur);
+      }
+      return { path, distance: Math.round(dist.get(endId) || 0) };
+    }
+
+    function nearestStartNode(targetFloorId, mode) {
+      const candidates = [];
+      floors.forEach(f => {
+        const map = floorMaps.get(f.id) || { nodes:[] };
+        map.nodes.forEach(node => {
+          if (mode === 'entrance' && node.kind !== 'entrance') return;
+          if (mode === 'stairs' && node.kind !== 'stairs') return;
+          if (mode === 'elevator' && node.kind !== 'elevator') return;
+          candidates.push({ ...node, floorId: f.id });
+        });
+      });
+      if (!candidates.length) return null;
+      const preferred = candidates.find(c => c.floorId === targetFloorId);
+      return preferred || candidates[0];
+    }
+
+    function targetNodeForClassroom(classroomId, floorId) {
+      const map = floorMaps.get(floorId) || { elements:[], nodes:[] };
+      const element = map.elements.find(e => e.classroomId === classroomId) || map.elements.find(e => (e.label || '').trim().toLowerCase() === (classrooms.find(c => c.id === classroomId)?.code || '').trim().toLowerCase());
+      if (!element) return null;
+      let best = null, bestDist = Infinity;
+      map.nodes.forEach(node => {
+        const d = Math.hypot(Number(node.x||0)-Number(element.x||0), Number(node.y||0)-Number(element.y||0));
+        if (d < bestDist) { bestDist = d; best = node; }
+      });
+      return best;
+    }
+
+    function describeRoute(path, nodeMeta, targetClassroom) {
+      const steps = [];
+      path.forEach((id, i) => {
+        const node = nodeMeta.get(id);
+        if (!node) return;
+        if (i === 0) steps.push(`Başlangıç: ${node.label || 'Başlangıç noktası'}`);
+        else {
+          const prev = nodeMeta.get(path[i-1]);
+          if (prev && prev.floorId !== node.floorId) {
+            steps.push(`${prev.linkKey || 'Geçiş'} ile ${floorName(node.floorId)} katına geçin.`);
+          } else {
+            steps.push(`${node.label || 'Rota noktası'} yönüne ilerleyin.`);
+          }
+        }
+      });
+      steps.push(`Hedef: ${targetClassroom.code || 'Seçili sınıf'}`);
+      return steps;
+    }
+
+    function floorName(floorId) {
+      return floors.find(f => f.id === floorId)?.name || 'kat';
+    }
+
+    function createRoute() {
+      const classroomId = $('classroomSelect').value;
+      if (!classroomId) return;
+      const targetClassroom = classrooms.find(c => c.id === classroomId);
+      const targetFloor = floorForClassroom(targetClassroom);
+      if (!targetFloor) {
+        $('routeBox').textContent = 'Bu sınıf için uygun kat planı bulunamadı.';
+        return;
+      }
+      currentFloorId = targetFloor.id;
+      $('floorView').value = currentFloorId;
+      highlightedClassroomId = classroomId;
+      const targetNode = targetNodeForClassroom(classroomId, targetFloor.id);
+      if (!targetNode) {
+        drawFloor(currentFloorId);
+        $('routeBox').textContent = 'Hedef sınıfa bağlı rota noktası bulunamadı. Yönetim panelinden rota noktası ekleyin.';
+        return;
+      }
+      const start = nearestStartNode(targetFloor.id, $('startMode').value);
+      if (!start) {
+        drawFloor(currentFloorId);
+        $('routeBox').textContent = 'Başlangıç noktası bulunamadı.';
+        return;
+      }
+      const { graph, nodeMeta } = buildGraph();
+      const result = dijkstra(graph, start.id, targetNode.id, $('accessibleOnly').value === 'true');
+      if (!result) {
+        currentPathNodes = [];
+        drawFloor(currentFloorId);
+        $('routeBox').textContent = 'Bu seçimle rota bulunamadı.';
+        return;
+      }
+      currentPathNodes = result.path.filter(id => nodeMeta.get(id)?.floorId === currentFloorId);
+      drawFloor(currentFloorId);
+      const steps = describeRoute(result.path, nodeMeta, targetClassroom);
+      $('routeBox').innerHTML = `<strong>Yaklaşık mesafe:</strong> ${result.distance} birim<br><br>` + steps.map(s => `• ${escapeHtml(s)}`).join('<br>');
+    }
+
+    $('classroomSelect').addEventListener('change', () => {
+      const classroom = classrooms.find(c => c.id === $('classroomSelect').value);
       const floor = floorForClassroom(classroom);
-      if (floor) await loadFloorData(floor.id);
-      renderMap();
-      history.replaceState({}, '', `./map.html?classroom=${encodeURIComponent(classroom.id)}`);
-      $('#routeInfo').innerHTML = `<strong>${escapeHtml(classroom.code || '-')}</strong> seçildi. Rota çizmek için butona basın.`;
+      if (floor) {
+        currentFloorId = floor.id;
+        $('floorView').value = currentFloorId;
+        highlightedClassroomId = classroom?.id || null;
+        currentPathNodes = [];
+        drawFloor(currentFloorId);
+      }
+    });
+    $('floorView').addEventListener('change', () => {
+      currentFloorId = $('floorView').value;
+      currentPathNodes = [];
+      drawFloor(currentFloorId);
+    });
+    $('routeBtn').addEventListener('click', createRoute);
+    $('clearBtn').addEventListener('click', () => {
+      currentPathNodes = [];
+      $('routeBox').textContent = 'Henüz rota oluşturulmadı.';
+      if (currentFloorId) drawFloor(currentFloorId);
     });
 
-    $('#drawRouteBtn').addEventListener('click', drawRoute);
-    $('#clearRouteBtn').addEventListener('click', clearRoute);
-    $('#zoomInBtn').addEventListener('click', () => { scale = Math.min(scale + 0.1, 2); stage?.scale({x:scale,y:scale}); stage?.draw(); });
-    $('#zoomOutBtn').addEventListener('click', () => { scale = Math.max(scale - 0.1, 0.3); stage?.scale({x:scale,y:scale}); stage?.draw(); });
-    $('#fitBtn').addEventListener('click', fitStage);
-    $('#startMode').addEventListener('change', renderMap);
+    $('zoomInBtn').addEventListener('click', () => {
+      if (!stage) return;
+      const baseW = stage.attrs.baseWidth || stage.width();
+      const baseH = stage.attrs.baseHeight || stage.height();
+      const cur = stage.scaleX() || 1;
+      stage.scale({ x: cur * 1.1, y: cur * 1.1 });
+      stage.width(baseW * stage.scaleX());
+      stage.height(baseH * stage.scaleY());
+      stage.draw();
+    });
+    $('zoomOutBtn').addEventListener('click', () => {
+      if (!stage) return;
+      const baseW = stage.attrs.baseWidth || stage.width();
+      const baseH = stage.attrs.baseHeight || stage.height();
+      const cur = stage.scaleX() || 1;
+      const next = Math.max(0.2, cur / 1.1);
+      stage.scale({ x: next, y: next });
+      stage.width(baseW * stage.scaleX());
+      stage.height(baseH * stage.scaleY());
+      stage.draw();
+    });
+    $('fitBtn').addEventListener('click', fitStage);
+
     window.addEventListener('resize', fitStage);
-
-    init().catch(err => {
-      console.error(err);
-      $('#routeInfo').textContent = 'Harita verileri yüklenemedi. Firebase ayarlarını ve kuralları kontrol edin.';
-    });
+    loadData();
   </script>
 </body>
 </html>

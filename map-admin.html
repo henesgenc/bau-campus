@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="./logo.png" />
+  <title>Bahçeşehir Üniversitesi Derslikleri - Harita Yönetimi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/konva@9/konva.min.js"></script>
+  <style>
+    :root{
+      --bg:#f0f2f7;--surface:#fff;--muted:#7a869a;--text:#0f1923;--border:#e2e6ed;
+      --primary:#1a56db;--primary-soft:#e8effe;--danger-soft:#fee4e2;--danger:#b42318;
+      --success-soft:#dcfae6;--success:#067647;--shadow-sm:0 1px 3px rgba(15,25,35,.07),0 4px 12px rgba(15,25,35,.05);
+      --shadow-md:0 4px 16px rgba(15,25,35,.09),0 1px 3px rgba(15,25,35,.06);--radius:16px;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+    .container{width:min(1320px,calc(100% - 40px));margin:0 auto}
+    .topbar{background:rgba(255,255,255,.88);backdrop-filter:blur(16px);border-bottom:1px solid rgba(226,230,237,.8);position:sticky;top:0;z-index:20}
+    .topbar-inner{height:68px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+    .brand{display:flex;align-items:center;gap:12px}
+    .brand-logo{width:38px;height:38px;object-fit:contain;display:block}
+    .brand-text h1{font-size:17px;font-weight:700;letter-spacing:-.01em;line-height:1.2}
+    .brand-text p{font-size:12px;color:var(--muted);margin-top:1px}
+    .nav{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .nav a,.nav button{
+      display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:10px;border:none;
+      color:var(--muted);text-decoration:none;font-size:13.5px;font-weight:600;background:#fff;cursor:pointer;
+      border:1px solid var(--border);font-family:'DM Sans',sans-serif;
+    }
+    .nav a.active{background:var(--primary-soft);color:var(--primary);border-color:#d6e3ff}
+    .page-header{background:#fff;border-bottom:1px solid var(--border);padding:24px 0 0}
+    .page-header h2{font-size:22px;font-weight:700;letter-spacing:-.02em;margin-bottom:16px}
+    .tabs{display:flex;gap:4px;flex-wrap:wrap;background:#e8eaef;border-radius:14px;padding:4px;width:fit-content}
+    .tab-link{padding:8px 16px;border-radius:10px;background:transparent;color:var(--muted);font-size:13.5px;font-weight:600;text-decoration:none}
+    .tab-link.active{background:#fff;color:var(--text);box-shadow:0 1px 4px rgba(15,25,35,.1)}
+    .content-area{padding:24px 0 56px}
+    .layout{display:grid;grid-template-columns:360px 1fr;gap:16px}
+    .stack{display:flex;flex-direction:column;gap:16px}
+    .card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm)}
+    .card-header{padding:18px 20px;border-bottom:1px solid var(--border)}
+    .card-header h3{font-size:17px;font-weight:700}
+    .card-header p{font-size:13px;color:var(--muted);margin-top:4px}
+    .card-body{padding:18px 20px}
+    .field{margin-bottom:14px}
+    label{display:block;margin-bottom:7px;font-size:12.5px;font-weight:700;color:#344054;letter-spacing:.01em;text-transform:uppercase}
+    input[type="text"],input[type="number"],input[type="file"],select,textarea{
+      width:100%;border:1px solid var(--border);border-radius:11px;background:#f7f8fb;padding:11px 13px;font-size:14px;
+      font-family:'DM Sans',sans-serif;outline:none;color:var(--text);transition:border-color .15s,box-shadow .15s,background .15s;appearance:none
+    }
+    select{
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23b0b9c8' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat:no-repeat;background-position:right 10px center;padding-right:36px
+    }
+    input:focus,select:focus,textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(26,86,219,.1);background:#fff}
+    input[type="file"]{padding:9px 13px;color:var(--muted);cursor:pointer}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+    .btn{border:none;border-radius:11px;padding:10px 16px;font-size:13.5px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+    .btn:hover{opacity:.9}
+    .btn-primary{background:var(--primary);color:#fff;box-shadow:0 2px 8px rgba(26,86,219,.25)}
+    .btn-secondary{background:var(--primary-soft);color:var(--primary)}
+    .btn-ghost{background:#fff;border:1px solid var(--border);color:#344054}
+    .btn-danger{background:var(--danger-soft);color:var(--danger)}
+    .status{padding:11px 14px;border-radius:11px;font-size:13.5px;font-weight:600;margin-bottom:14px;display:none}
+    .status.show{display:block}.status.error{background:var(--danger-soft);color:var(--danger)}.status.success{background:var(--success-soft);color:var(--success)}
+    .toolbar{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+    .thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    .thumbs img{width:84px;height:64px;object-fit:cover;border-radius:9px;border:1px solid var(--border)}
+    .canvas-shell{background:#fff;border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm);padding:14px;min-height:760px}
+    .canvas-toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+    #mapCanvasWrap{width:100%;overflow:auto;border:1px solid var(--border);border-radius:14px;background:#f7f8fc;min-height:680px}
+    #mapCanvas{min-height:680px}
+    .help-box{padding:14px;border-radius:12px;background:#f7f8fb;border:1px solid var(--border);color:var(--muted);font-size:13px;line-height:1.65}
+    .chip-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+    .chip{display:inline-flex;align-items:center;background:#eef2ff;border:1px solid #dbe6ff;border-radius:999px;padding:6px 10px;font-size:12px;color:#36539a;font-weight:600}
+    .list-note{font-size:13px;color:var(--muted)}
+    .auth-wrap{max-width:420px;margin:48px auto}
+    .hidden{display:none!important}
+    @media(max-width:1180px){.layout{grid-template-columns:1fr}}
+    @media(max-width:860px){.grid2,.grid4{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <div class="brand">
+        <img class="brand-logo" src="./logo.png" alt="Bahçeşehir Üniversitesi logosu" />
+        <div class="brand-text">
+          <h1 id="brandTitle">Bahçeşehir Üniversitesi Derslikleri</h1>
+          <p id="brandSubtitle">Harita Yönetimi</p>
+        </div>
+      </div>
+      <nav class="nav">
+        <a href="./index.html">Ana Sayfa</a>
+        <a href="./admin.html">Yönetim</a>
+        <a href="./map-admin.html" class="active">Haritalar</a>
+        <button id="logoutBtn" class="hidden">Çıkış Yap</button>
+      </nav>
+    </div>
+  </header>
+
+  <div id="authView" class="auth-wrap hidden">
+    <div class="card">
+      <div class="card-header">
+        <h3>Yönetim Girişi</h3>
+        <p>Harita düzenleme için giriş yapın.</p>
+      </div>
+      <div class="card-body">
+        <div id="authStatus" class="status"></div>
+        <div class="field"><label>E-posta</label><input id="loginEmail" type="text" placeholder="admin@site.com" /></div>
+        <div class="field"><label>Şifre</label><input id="loginPassword" type="password" placeholder="Şifreniz" /></div>
+        <button id="loginBtn" class="btn btn-primary" style="width:100%">Giriş Yap</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="appView" class="hidden">
+    <div class="page-header">
+      <div class="container">
+        <h2>Harita Yönetimi</h2>
+        <div class="tabs">
+          <a class="tab-link" href="./admin.html">Kampüsler</a>
+          <a class="tab-link" href="./admin.html">Bloklar</a>
+          <a class="tab-link" href="./admin.html">Sınıflar</a>
+          <a class="tab-link active" href="./map-admin.html">Haritalar</a>
+        </div>
+      </div>
+    </div>
+
+    <main class="content-area">
+      <div class="container">
+        <div class="toolbar" style="margin-bottom:16px">
+          <div class="list-note"><strong id="floorCount">0</strong> kat planı, <strong id="nodeCount">0</strong> rota noktası</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button id="newFloorBtn" class="btn btn-secondary">Yeni Kat</button>
+            <button id="saveFloorBtn" class="btn btn-primary">Katı Kaydet</button>
+            <button id="saveMapBtn" class="btn btn-primary">Haritayı Kaydet</button>
+          </div>
+        </div>
+
+        <div class="layout">
+          <div class="stack">
+            <div class="card">
+              <div class="card-header">
+                <h3>Kat Bilgileri</h3>
+                <p>Kampüs, blok ve kat planını yönetin.</p>
+              </div>
+              <div class="card-body">
+                <div id="mapStatus" class="status"></div>
+                <div class="grid2">
+                  <div class="field">
+                    <label>Kampüs</label>
+                    <select id="mapCampusId"></select>
+                  </div>
+                  <div class="field">
+                    <label>Blok</label>
+                    <select id="mapBlockId"></select>
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Mevcut Katlar</label>
+                  <select id="floorSelect"><option value="">Kat seçin</option></select>
+                </div>
+                <div class="grid2">
+                  <div class="field">
+                    <label>Kat Adı</label>
+                    <input id="floorName" type="text" placeholder="1. Kat" />
+                  </div>
+                  <div class="field">
+                    <label>Seviye</label>
+                    <input id="floorLevel" type="number" value="1" />
+                  </div>
+                </div>
+                <div class="grid2">
+                  <div class="field">
+                    <label>Genişlik</label>
+                    <input id="floorWidth" type="number" value="1400" />
+                  </div>
+                  <div class="field">
+                    <label>Yükseklik</label>
+                    <input id="floorHeight" type="number" value="900" />
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Plan Görseli</label>
+                  <input id="floorImage" type="file" accept="image/*" />
+                  <div id="floorImagePreview" class="thumbs"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h3>Harita Öğeleri</h3>
+                <p>Sürükle-bırak ile şekillendirilecek öğeleri ekleyin.</p>
+              </div>
+              <div class="card-body">
+                <div class="field">
+                  <label>Öğe Tipi</label>
+                  <select id="elementType">
+                    <option value="corridor">Koridor</option>
+                    <option value="classroom">Sınıf</option>
+                    <option value="toilet">Tuvalet</option>
+                    <option value="stairs">Merdiven</option>
+                    <option value="elevator">Asansör</option>
+                    <option value="entrance">Giriş</option>
+                    <option value="exit">Çıkış</option>
+                    <option value="office">Ofis</option>
+                    <option value="custom">Özel Alan</option>
+                  </select>
+                </div>
+                <div class="grid2">
+                  <div class="field">
+                    <label>Etiket</label>
+                    <input id="elementLabel" type="text" placeholder="B201 / WC / Giriş" />
+                  </div>
+                  <div class="field">
+                    <label>Sınıf Bağlantısı</label>
+                    <select id="elementClassroomId"><option value="">Bağlama yok</option></select>
+                  </div>
+                </div>
+                <div class="grid2">
+                  <div class="field">
+                    <label>X</label>
+                    <input id="elementX" type="number" value="100" />
+                  </div>
+                  <div class="field">
+                    <label>Y</label>
+                    <input id="elementY" type="number" value="100" />
+                  </div>
+                </div>
+                <div class="grid2">
+                  <div class="field">
+                    <label>Genişlik</label>
+                    <input id="elementWidth" type="number" value="180" />
+                  </div>
+                  <div class="field">
+                    <label>Yükseklik</label>
+                    <input id="elementHeight" type="number" value="90" />
+                  </div>
+                </div>
+                <div class="toolbar">
+                  <button id="addElementBtn" class="btn btn-secondary">Öğe Ekle</button>
+                  <button id="addNodeBtn" class="btn btn-ghost">Rota Noktası</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h3>Rota Ayarları</h3>
+                <p>Noktaları bağlayarak yol bulmayı oluşturun.</p>
+              </div>
+              <div class="card-body">
+                <div class="grid2">
+                  <div class="field">
+                    <label>Bağlantı Anahtarı</label>
+                    <input id="nodeLinkKey" type="text" placeholder="STAIR-A / ELEV-1" />
+                  </div>
+                  <div class="field">
+                    <label>Erişilebilir</label>
+                    <select id="nodeAccessible">
+                      <option value="true">Evet</option>
+                      <option value="false">Hayır</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="toolbar">
+                  <button id="linkNodesBtn" class="btn btn-ghost">İki Noktayı Bağla</button>
+                  <button id="deleteSelectedBtn" class="btn btn-danger">Seçileni Sil</button>
+                </div>
+                <div class="help-box">
+                  Kullanım sırası:
+                  <div class="chip-row">
+                    <span class="chip">Katı seç</span>
+                    <span class="chip">Öğeleri ekle</span>
+                    <span class="chip">Nokta ekle</span>
+                    <span class="chip">Noktaları bağla</span>
+                    <span class="chip">Kaydet</span>
+                  </div>
+                  Katlar arası geçiş için merdiven ve asansör noktalarında aynı bağlantı anahtarını kullanın.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="canvas-shell">
+            <div class="canvas-toolbar">
+              <button id="zoomInBtn" class="btn btn-ghost">Yakınlaştır +</button>
+              <button id="zoomOutBtn" class="btn btn-ghost">Uzaklaştır −</button>
+              <button id="fitBtn" class="btn btn-ghost">Sığdır</button>
+            </div>
+            <div id="mapCanvasWrap">
+              <div id="mapCanvas"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script type="module">
+    import { db, auth, storage } from './firebase-config.js';
+    import {
+      collection, getDocs, getDoc, query, orderBy, addDoc, updateDoc, deleteDoc, doc, setDoc, serverTimestamp
+    } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js';
+    import { signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js';
+    import { ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-storage.js';
+
+    const $ = id => document.getElementById(id);
+
+    let campuses = [], blocks = [], classrooms = [], floors = [], settings = {};
+    let editingFloorId = null;
+    let floorImageObject = null;
+    let mapElements = [], routeNodes = [], routeEdges = [];
+    let stage = null, bgLayer = null, edgeLayer = null, elementLayer = null, nodeLayer = null, transformer = null;
+    let selectedMeta = null, linkSelection = [];
+
+    function escapeHtml(str='') {
+      return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+    function showStatus(el, text, type='success') {
+      el.textContent = text;
+      el.className = `status show ${type}`;
+    }
+    function clearStatus(el) {
+      el.textContent = '';
+      el.className = 'status';
+    }
+    function previewSingle(targetId, obj) {
+      const wrap = $(targetId);
+      wrap.innerHTML = obj ? `<img src="${obj.url}" alt="">` : '';
+    }
+    async function uploadFile(path, file) {
+      const storageRef = ref(storage, path);
+      await uploadBytes(storageRef, file);
+      return { path, url: await getDownloadURL(storageRef) };
+    }
+
+    function safeName(v, fallback='') { return (v ?? fallback).toString(); }
+
+    async function loadAll() {
+      const safeGet = async (name, orderField='name') => {
+        try { return await getDocs(query(collection(db, name), orderBy(orderField))); }
+        catch { return await getDocs(collection(db, name)); }
+      };
+      const [campSnap, blockSnap, classSnap, floorSnap] = await Promise.all([
+        safeGet('campuses', 'sortOrder'),
+        safeGet('blocks', 'sortOrder'),
+        safeGet('classrooms', 'code'),
+        safeGet('floors', 'level')
+      ]);
+      campuses = campSnap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b)=>Number(a.sortOrder||0)-Number(b.sortOrder||0)||safeName(a.name).localeCompare(safeName(b.name),'tr'));
+      blocks = blockSnap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b)=>Number(a.sortOrder||0)-Number(b.sortOrder||0)||safeName(a.name).localeCompare(safeName(b.name),'tr'));
+      classrooms = classSnap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b)=>safeName(a.code).localeCompare(safeName(b.code),'tr'));
+      floors = floorSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      try {
+        const setSnap = await getDoc(doc(db, 'settings', 'site'));
+        settings = setSnap.exists() ? setSnap.data() : {};
+      } catch { settings = {}; }
+
+      $('brandTitle').textContent = settings.title || 'Bahçeşehir Üniversitesi Derslikleri';
+      $('brandSubtitle').textContent = settings.subtitle || 'Harita Yönetimi';
+
+      fillCampusBlockSelectors();
+      $('floorCount').textContent = floors.length;
+      $('nodeCount').textContent = routeNodes.length;
+    }
+
+    function fillCampusBlockSelectors() {
+      const campusOptions = campuses.map(c => `<option value="${c.id}">${escapeHtml(c.name || '')}</option>`).join('');
+      $('mapCampusId').innerHTML = campusOptions;
+      if (!$('mapCampusId').value && campuses[0]) $('mapCampusId').value = campuses[0].id;
+      fillBlockOptions();
+    }
+
+    function fillBlockOptions() {
+      const campusId = $('mapCampusId').value;
+      const filteredBlocks = blocks.filter(b => !campusId || b.campusId === campusId);
+      $('mapBlockId').innerHTML = filteredBlocks.map(b => `<option value="${b.id}">${escapeHtml(b.name || '')}</option>`).join('');
+      if (!$('mapBlockId').value && filteredBlocks[0]) $('mapBlockId').value = filteredBlocks[0].id;
+      fillFloorOptions();
+      fillClassroomOptions();
+    }
+
+    function fillFloorOptions(selected='') {
+      const campusId = $('mapCampusId').value;
+      const blockId = $('mapBlockId').value;
+      const filteredFloors = floors
+        .filter(f => (!campusId || f.campusId === campusId) && (!blockId || f.blockId === blockId))
+        .sort((a,b)=>Number(a.level||0)-Number(b.level||0)||safeName(a.name).localeCompare(safeName(b.name),'tr'));
+      $('floorSelect').innerHTML = '<option value="">Kat seçin</option>' + filteredFloors.map(f => `<option value="${f.id}">${escapeHtml(f.name || '')}</option>`).join('');
+      if (selected) $('floorSelect').value = selected;
+    }
+
+    function fillClassroomOptions() {
+      const campusId = $('mapCampusId').value;
+      const blockId = $('mapBlockId').value;
+      const filtered = classrooms.filter(c => (!campusId || c.campusId === campusId) && (!blockId || c.blockId === blockId));
+      $('elementClassroomId').innerHTML = '<option value="">Bağlama yok</option>' + filtered.map(c => `<option value="${c.id}">${escapeHtml(c.code || '')}</option>`).join('');
+    }
+
+    function resetFloorForm() {
+      editingFloorId = null;
+      floorImageObject = null;
+      mapElements = [];
+      routeNodes = [];
+      routeEdges = [];
+      selectedMeta = null;
+      linkSelection = [];
+      $('floorSelect').value = '';
+      $('floorName').value = '';
+      $('floorLevel').value = 1;
+      $('floorWidth').value = 1400;
+      $('floorHeight').value = 900;
+      $('floorImage').value = '';
+      $('floorImagePreview').innerHTML = '';
+      $('nodeLinkKey').value = '';
+      $('nodeAccessible').value = 'true';
+      clearStatus($('mapStatus'));
+      renderStage();
+      $('nodeCount').textContent = routeNodes.length;
+    }
+
+    async function saveFloorMeta() {
+      clearStatus($('mapStatus'));
+      const campusId = $('mapCampusId').value;
+      const blockId = $('mapBlockId').value;
+      const name = $('floorName').value.trim();
+      if (!campusId || !blockId || !name) return showStatus($('mapStatus'), 'Kampüs, blok ve kat adı zorunludur.', 'error');
+      let image = null;
+      if (floorImageObject?.file) image = await uploadFile(`floors/${blockId}/${Date.now()}-${floorImageObject.file.name}`, floorImageObject.file);
+      const current = editingFloorId ? floors.find(f => f.id === editingFloorId) : null;
+      const payload = {
+        campusId, blockId, name,
+        level: Number($('floorLevel').value || 0),
+        width: Number($('floorWidth').value || 1400),
+        height: Number($('floorHeight').value || 900),
+        backgroundImageUrl: image?.url || current?.backgroundImageUrl || '',
+        backgroundImagePath: image?.path || current?.backgroundImagePath || '',
+        updatedAt: serverTimestamp()
+      };
+      if (editingFloorId) {
+        await updateDoc(doc(db, 'floors', editingFloorId), payload);
+      } else {
+        payload.createdAt = serverTimestamp();
+        const refDoc = await addDoc(collection(db, 'floors'), payload);
+        editingFloorId = refDoc.id;
+      }
+      showStatus($('mapStatus'), 'Kat bilgileri kaydedildi.');
+      await loadAll();
+      fillFloorOptions(editingFloorId);
+      await loadSelectedFloor(editingFloorId);
+    }
+
+    async function loadSelectedFloor(floorId) {
+      if (!floorId) {
+        resetFloorForm();
+        return;
+      }
+      const floor = floors.find(f => f.id === floorId);
+      if (!floor) return;
+      editingFloorId = floorId;
+      $('floorName').value = floor.name || '';
+      $('floorLevel').value = floor.level ?? 0;
+      $('floorWidth').value = floor.width || 1400;
+      $('floorHeight').value = floor.height || 900;
+      floorImageObject = floor.backgroundImageUrl ? { url: floor.backgroundImageUrl, path: floor.backgroundImagePath || '' } : null;
+      previewSingle('floorImagePreview', floorImageObject);
+      const [elSnap, nodeSnap, edgeSnap] = await Promise.all([
+        getDocs(collection(db, `floors/${floorId}/mapElements`)),
+        getDocs(collection(db, `floors/${floorId}/routeNodes`)),
+        getDocs(collection(db, `floors/${floorId}/routeEdges`))
+      ]);
+      mapElements = elSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      routeNodes = nodeSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      routeEdges = edgeSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderStage();
+      $('nodeCount').textContent = routeNodes.length;
+    }
+
+    function ensureStage() {
+      const width = Number($('floorWidth').value || 1400);
+      const height = Number($('floorHeight').value || 900);
+      if (!stage) {
+        stage = new Konva.Stage({ container: 'mapCanvas', width, height });
+        bgLayer = new Konva.Layer();
+        edgeLayer = new Konva.Layer();
+        elementLayer = new Konva.Layer();
+        nodeLayer = new Konva.Layer();
+        transformer = new Konva.Transformer({ rotateEnabled: false, ignoreStroke: true, padding: 6 });
+        elementLayer.add(transformer);
+        stage.add(bgLayer);
+        stage.add(edgeLayer);
+        stage.add(elementLayer);
+        stage.add(nodeLayer);
+      } else {
+        stage.width(width);
+        stage.height(height);
+      }
+      bgLayer.destroyChildren();
+      edgeLayer.destroyChildren();
+      elementLayer.destroyChildren();
+      nodeLayer.destroyChildren();
+      transformer.nodes([]);
+    }
+
+    function elementColor(type='custom') {
+      return ({
+        corridor:'#e8effe', classroom:'#e8f7ee', toilet:'#fff3e7', stairs:'#f2e9ff',
+        elevator:'#fde7ef', entrance:'#dcfae6', exit:'#fee4e2', office:'#eef2ff', custom:'#f3f4f6'
+      })[type] || '#f3f4f6';
+    }
+
+    function nodeColor(kind='node') {
+      return ({ entrance:'#067647', stairs:'#7c3aed', elevator:'#db2777', node:'#1a56db' })[kind] || '#1a56db';
+    }
+
+    function setSelected(meta, shape) {
+      selectedMeta = meta;
+      transformer.nodes(shape ? [shape] : []);
+      if (meta?.kind === 'node') {
+        const node = routeNodes.find(n => n.id === meta.id);
+        $('nodeLinkKey').value = node?.linkKey || '';
+        $('nodeAccessible').value = String(node?.accessible !== false);
+      } else {
+        $('nodeLinkKey').value = '';
+        $('nodeAccessible').value = 'true';
+      }
+    }
+
+    function fitStage() {
+      if (!stage) return;
+      const wrap = $('mapCanvasWrap');
+      const width = Number($('floorWidth').value || 1400);
+      const height = Number($('floorHeight').value || 900);
+      const scale = Math.min((wrap.clientWidth - 24) / width || 1, 1);
+      stage.scale({ x: scale, y: scale });
+      stage.width(width * scale);
+      stage.height(height * scale);
+      stage.draw();
+    }
+
+    function renderStage() {
+      ensureStage();
+      const width = Number($('floorWidth').value || 1400);
+      const height = Number($('floorHeight').value || 900);
+
+      bgLayer.add(new Konva.Rect({ x:0, y:0, width, height, fill:'#fff' }));
+
+      if (floorImageObject?.url) {
+        const imageObj = new window.Image();
+        imageObj.crossOrigin = 'anonymous';
+        imageObj.onload = () => {
+          bgLayer.destroyChildren();
+          bgLayer.add(new Konva.Rect({ x:0, y:0, width, height, fill:'#fff' }));
+          bgLayer.add(new Konva.Image({ x:0, y:0, width, height, image:imageObj, opacity:0.35, listening:false }));
+          bgLayer.draw();
+        };
+        imageObj.src = floorImageObject.url;
+      }
+
+      routeEdges.forEach(edge => {
+        const from = routeNodes.find(n => n.id === edge.fromNodeId);
+        const to = routeNodes.find(n => n.id === edge.toNodeId);
+        if (!from || !to) return;
+        edgeLayer.add(new Konva.Line({
+          points:[Number(from.x||0), Number(from.y||0), Number(to.x||0), Number(to.y||0)],
+          stroke: edge.accessible === false ? '#ef4444' : '#1a56db',
+          strokeWidth:3,
+          dash: edge.accessible === false ? [8,6] : []
+        }));
+      });
+
+      mapElements.forEach(item => {
+        const group = new Konva.Group({ x:Number(item.x||0), y:Number(item.y||0), draggable:true });
+        const rect = new Konva.Rect({
+          width:Number(item.width||180), height:Number(item.height||90), cornerRadius:12,
+          fill:elementColor(item.type), stroke:'#98a2b3', strokeWidth:1.5
+        });
+        const text = new Konva.Text({
+          x:10, y:10, width:Math.max(50, Number(item.width||180)-20),
+          text:item.label || item.type || 'Öğe', fontSize:15, fontFamily:'DM Sans', fontStyle:'700', fill:'#0f1923'
+        });
+        group.add(rect); group.add(text);
+        group.on('click', () => setSelected({ kind:'element', id:item.id }, group));
+        group.on('dragend', () => { item.x = group.x(); item.y = group.y(); });
+        elementLayer.add(group);
+      });
+
+      routeNodes.forEach(node => {
+        const group = new Konva.Group({ x:Number(node.x||0), y:Number(node.y||0), draggable:true });
+        const circle = new Konva.Circle({ radius:12, fill:nodeColor(node.kind), stroke:'#fff', strokeWidth:3 });
+        const label = new Konva.Text({ x:16, y:-8, text:node.label || 'Nokta', fontSize:13, fontFamily:'DM Sans', fontStyle:'700', fill:'#0f1923' });
+        group.add(circle); group.add(label);
+        group.on('click', () => {
+          setSelected({ kind:'node', id:node.id }, group);
+          if (!linkSelection.some(x => x.id === node.id)) linkSelection.push({ id: node.id });
+          if (linkSelection.length > 2) linkSelection = linkSelection.slice(-2);
+        });
+        group.on('dragend', () => { node.x = group.x(); node.y = group.y(); renderStage(); });
+        nodeLayer.add(group);
+      });
+
+      bgLayer.draw(); edgeLayer.draw(); elementLayer.draw(); nodeLayer.draw();
+      fitStage();
+    }
+
+    function addElement() {
+      if (!editingFloorId) return showStatus($('mapStatus'), 'Önce katı kaydedin veya seçin.', 'error');
+      mapElements.push({
+        id: crypto.randomUUID(),
+        type: $('elementType').value,
+        label: $('elementLabel').value.trim() || $('elementType').value,
+        classroomId: $('elementClassroomId').value || '',
+        x: Number($('elementX').value || 0),
+        y: Number($('elementY').value || 0),
+        width: Number($('elementWidth').value || 180),
+        height: Number($('elementHeight').value || 90)
+      });
+      renderStage();
+    }
+
+    function addNode() {
+      if (!editingFloorId) return showStatus($('mapStatus'), 'Önce katı kaydedin veya seçin.', 'error');
+      const type = $('elementType').value;
+      const kind = type === 'stairs' ? 'stairs' : type === 'elevator' ? 'elevator' : type === 'entrance' ? 'entrance' : 'node';
+      routeNodes.push({
+        id: crypto.randomUUID(),
+        label: $('elementLabel').value.trim() || 'Rota Noktası',
+        kind,
+        x: Number($('elementX').value || 100),
+        y: Number($('elementY').value || 100),
+        linkKey: $('nodeLinkKey').value.trim(),
+        accessible: $('nodeAccessible').value === 'true'
+      });
+      $('nodeCount').textContent = routeNodes.length;
+      renderStage();
+    }
+
+    function linkNodes() {
+      if (linkSelection.length < 2) return showStatus($('mapStatus'), 'Bağlamak için iki rota noktası seçin.', 'error');
+      const a = linkSelection[linkSelection.length - 2];
+      const b = linkSelection[linkSelection.length - 1];
+      if (!a || !b || a.id === b.id) return;
+      const from = routeNodes.find(n => n.id === a.id);
+      const to = routeNodes.find(n => n.id === b.id);
+      if (!from || !to) return;
+      const exists = routeEdges.some(e => (e.fromNodeId === from.id && e.toNodeId === to.id) || (e.fromNodeId === to.id && e.toNodeId === from.id));
+      if (exists) return showStatus($('mapStatus'), 'Bu iki nokta zaten bağlı.', 'error');
+      const distance = Math.round(Math.hypot(Number(from.x||0)-Number(to.x||0), Number(from.y||0)-Number(to.y||0)));
+      routeEdges.push({
+        id: crypto.randomUUID(),
+        fromNodeId: from.id,
+        toNodeId: to.id,
+        distance,
+        accessible: from.accessible !== false && to.accessible !== false
+      });
+      renderStage();
+    }
+
+    function deleteSelected() {
+      if (!selectedMeta) return;
+      if (selectedMeta.kind === 'element') {
+        mapElements = mapElements.filter(x => x.id !== selectedMeta.id);
+      } else if (selectedMeta.kind === 'node') {
+        routeNodes = routeNodes.filter(x => x.id !== selectedMeta.id);
+        routeEdges = routeEdges.filter(e => e.fromNodeId !== selectedMeta.id && e.toNodeId !== selectedMeta.id);
+        $('nodeCount').textContent = routeNodes.length;
+      }
+      selectedMeta = null;
+      linkSelection = [];
+      renderStage();
+    }
+
+    async function saveMap() {
+      if (!editingFloorId) return showStatus($('mapStatus'), 'Önce katı kaydedin.', 'error');
+      if (selectedMeta?.kind === 'node') {
+        const node = routeNodes.find(n => n.id === selectedMeta.id);
+        if (node) {
+          node.linkKey = $('nodeLinkKey').value.trim();
+          node.accessible = $('nodeAccessible').value === 'true';
+        }
+      }
+      const sync = async (path, items) => {
+        const snap = await getDocs(collection(db, path));
+        const oldIds = snap.docs.map(d => d.id);
+        const newIds = items.map(i => i.id);
+        await Promise.all(items.map(item => setDoc(doc(db, path, item.id), item)));
+        await Promise.all(oldIds.filter(id => !newIds.includes(id)).map(id => deleteDoc(doc(db, path, id))));
+      };
+      await sync(`floors/${editingFloorId}/mapElements`, mapElements);
+      await sync(`floors/${editingFloorId}/routeNodes`, routeNodes);
+      await sync(`floors/${editingFloorId}/routeEdges`, routeEdges);
+      showStatus($('mapStatus'), 'Harita kaydedildi.');
+      await loadAll();
+      fillFloorOptions(editingFloorId);
+    }
+
+    $('mapCampusId').addEventListener('change', fillBlockOptions);
+    $('mapBlockId').addEventListener('change', () => { fillFloorOptions(); fillClassroomOptions(); resetFloorForm(); });
+    $('floorSelect').addEventListener('change', async e => { await loadSelectedFloor(e.target.value); });
+    $('floorImage').addEventListener('change', e => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      floorImageObject = { url: URL.createObjectURL(file), file };
+      previewSingle('floorImagePreview', floorImageObject);
+      renderStage();
+    });
+    $('saveFloorBtn').addEventListener('click', saveFloorMeta);
+    $('newFloorBtn').addEventListener('click', resetFloorForm);
+    $('addElementBtn').addEventListener('click', addElement);
+    $('addNodeBtn').addEventListener('click', addNode);
+    $('linkNodesBtn').addEventListener('click', linkNodes);
+    $('deleteSelectedBtn').addEventListener('click', deleteSelected);
+    $('saveMapBtn').addEventListener('click', saveMap);
+    $('nodeLinkKey').addEventListener('input', () => {
+      if (!selectedMeta || selectedMeta.kind !== 'node') return;
+      const node = routeNodes.find(n => n.id === selectedMeta.id);
+      if (node) node.linkKey = $('nodeLinkKey').value.trim();
+    });
+    $('nodeAccessible').addEventListener('change', () => {
+      if (!selectedMeta || selectedMeta.kind !== 'node') return;
+      const node = routeNodes.find(n => n.id === selectedMeta.id);
+      if (node) node.accessible = $('nodeAccessible').value === 'true';
+    });
+
+    $('zoomInBtn').addEventListener('click', () => {
+      if (!stage) return;
+      const cur = stage.scaleX() || 1;
+      stage.scale({ x: cur * 1.1, y: cur * 1.1 });
+      stage.width((Number($('floorWidth').value || 1400)) * stage.scaleX());
+      stage.height((Number($('floorHeight').value || 900)) * stage.scaleY());
+      stage.draw();
+    });
+    $('zoomOutBtn').addEventListener('click', () => {
+      if (!stage) return;
+      const cur = stage.scaleX() || 1;
+      const next = Math.max(0.2, cur / 1.1);
+      stage.scale({ x: next, y: next });
+      stage.width((Number($('floorWidth').value || 1400)) * stage.scaleX());
+      stage.height((Number($('floorHeight').value || 900)) * stage.scaleY());
+      stage.draw();
+    });
+    $('fitBtn').addEventListener('click', fitStage);
+
+    $('loginBtn').addEventListener('click', async () => {
+      clearStatus($('authStatus'));
+      try {
+        await signInWithEmailAndPassword(auth, $('loginEmail').value.trim(), $('loginPassword').value);
+      } catch (e) {
+        showStatus($('authStatus'), 'Giriş başarısız. E-posta/şifre veya Auth ayarlarını kontrol edin.', 'error');
+      }
+    });
+
+    $('logoutBtn').addEventListener('click', () => signOut(auth));
+
+    onAuthStateChanged(auth, async user => {
+      if (user) {
+        $('authView').classList.add('hidden');
+        $('appView').classList.remove('hidden');
+        $('logoutBtn').classList.remove('hidden');
+        await loadAll();
+        renderStage();
+      } else {
+        $('authView').classList.remove('hidden');
+        $('appView').classList.add('hidden');
+        $('logoutBtn').classList.add('hidden');
+      }
+    });
+
+    window.addEventListener('resize', fitStage);
+  </script>
+</body>
+</html>

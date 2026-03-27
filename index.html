@@ -1,130 +1,159 @@
-
 <!DOCTYPE html>
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bahçeşehir Üniversitesi Derslikleri</title>
   <link rel="icon" type="image/png" href="./logo.png" />
+  <title>Bahçeşehir Üniversitesi Derslikleri</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root{
-      --bg:#f4f6fb;--surface:#fff;--text:#142033;--muted:#64748b;--border:#dbe2ea;
-      --primary:#1a56db;--primary-soft:#eaf1ff;--shadow:0 12px 40px rgba(15,23,42,.08);--radius:18px;
+      --bg:#f0f2f7;--surface:#fff;--muted:#7a869a;--text:#0f1923;--border:#e2e6ed;
+      --primary:#1a56db;--primary-soft:#e8effe;--shadow-sm:0 1px 3px rgba(15,25,35,.07),0 4px 12px rgba(15,25,35,.05);
+      --shadow-md:0 4px 16px rgba(15,25,35,.09),0 1px 3px rgba(15,25,35,.06);--radius:18px;
     }
-    *{box-sizing:border-box} body{margin:0;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
-    .container{width:min(1240px,calc(100% - 32px));margin:0 auto}
-    .topbar{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.88);backdrop-filter:blur(14px);border-bottom:1px solid rgba(219,226,234,.85)}
-    .topbar-inner{min-height:72px;display:flex;justify-content:space-between;align-items:center;gap:16px}
-    .brand{display:flex;align-items:center;gap:12px}.brand img{width:42px;height:42px;object-fit:contain}
-    .brand h1{font-size:18px;margin:0}.brand p{margin:2px 0 0;color:var(--muted);font-size:12px}
-    .hero{padding:24px 0 16px}
-    .hero-card{background:linear-gradient(135deg,#fff 0%,#f7faff 100%);border:1px solid var(--border);border-radius:24px;padding:22px;box-shadow:var(--shadow)}
-    .hero h2{margin:0 0 6px;font-size:28px;letter-spacing:-.03em}.hero p{margin:0;color:var(--muted)}
-    .filters{padding:18px 0}
-    .filter-grid{display:grid;grid-template-columns:1.1fr 1fr 1fr 1fr auto;gap:10px}
-    .input,.select,button{height:46px;border-radius:14px;font:inherit}
-    .input,.select{width:100%;border:1px solid var(--border);background:#fff;padding:0 14px;color:var(--text);outline:none}
-    .input:focus,.select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(26,86,219,.12)}
-    .btn{border:none;background:var(--primary);color:#fff;padding:0 16px;font-weight:700;cursor:pointer}
-    .meta-row{display:flex;justify-content:space-between;align-items:center;margin:8px 0 14px}
-    .meta-row .count{color:var(--muted);font-size:14px}
-    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:18px;padding-bottom:42px}
-    .card{background:#fff;border:1px solid var(--border);border-radius:22px;overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column}
-    .card img{width:100%;height:210px;object-fit:cover;background:#eef2f8}
-    .card-img-fallback{height:210px;display:grid;place-items:center;background:linear-gradient(135deg,#eef2f8,#f7f9fc);font-size:42px}
-    .card-body{padding:16px;display:flex;flex-direction:column;gap:8px;flex:1}
-    .code{font-size:19px;font-weight:700}.location{color:var(--muted);font-size:14px;line-height:1.5}
-    .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:2px}
-    .chip{display:inline-flex;align-items:center;gap:6px;background:#f5f8fc;border:1px solid var(--border);padding:6px 10px;border-radius:999px;font-size:12px;color:#425168}
-    .card-actions{display:flex;gap:10px;margin-top:auto;padding-top:10px}
-    .ghost,.btn-link{height:40px;border-radius:12px;padding:0 14px;font-weight:700;cursor:pointer}
-    .ghost{background:#fff;border:1px solid var(--border);color:var(--text)}
-    .btn-link{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;background:var(--primary-soft);color:var(--primary);border:1px solid #cfe0ff}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
+    .container{width:min(1240px,calc(100% - 40px));margin:0 auto}
+    .topbar{background:rgba(255,255,255,.88);backdrop-filter:blur(16px);border-bottom:1px solid rgba(226,230,237,.8);position:sticky;top:0;z-index:20}
+    .topbar-inner{height:68px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+    .brand{display:flex;align-items:center;gap:12px}
+    .brand-logo{width:38px;height:38px;object-fit:contain;display:block}
+    .brand-text h1{font-size:17px;font-weight:700;letter-spacing:-.01em;line-height:1.2}
+    .brand-text p{font-size:12px;color:var(--muted);margin-top:1px}
+    .hero{padding:24px 0 18px}
+    .hero-card{
+      background:linear-gradient(135deg,#fff 0%,#f5f8ff 100%);border:1px solid var(--border);border-radius:24px;
+      box-shadow:var(--shadow-md);padding:24px;display:flex;flex-direction:column;gap:14px;
+    }
+    .hero-card h2{font-size:28px;font-weight:700;letter-spacing:-.03em}
+    .hero-card p{font-size:15px;color:#475467;max-width:860px;line-height:1.7}
+    .filters{
+      background:#fff;border:1px solid var(--border);border-radius:20px;box-shadow:var(--shadow-sm);
+      padding:18px;margin:8px 0 18px;
+    }
+    .filter-grid{display:grid;grid-template-columns:1.1fr 1fr 1fr 1fr 1fr;gap:12px}
+    .field label{display:block;margin-bottom:7px;font-size:12.5px;font-weight:700;color:#344054;letter-spacing:.01em;text-transform:uppercase}
+    .field input,.field select{
+      width:100%;border:1px solid var(--border);border-radius:12px;background:#f7f8fb;padding:11px 13px;font-size:14px;
+      font-family:'DM Sans',sans-serif;outline:none;color:var(--text);transition:border-color .15s,box-shadow .15s,background .15s;appearance:none;
+    }
+    .field select{
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23b0b9c8' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat:no-repeat;background-position:right 10px center;padding-right:36px;
+    }
+    .field input:focus,.field select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(26,86,219,.1);background:#fff}
+    .filter-bar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:14px;flex-wrap:wrap}
+    .muted{color:var(--muted);font-size:13px}
+    .btn{border:none;border-radius:11px;padding:10px 16px;font-size:13.5px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;text-decoration:none}
+    .btn-primary{background:var(--primary);color:#fff}
+    .btn-ghost{background:#fff;border:1px solid var(--border);color:#344054}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:18px;padding-bottom:54px}
+    .card{background:#fff;border:1px solid var(--border);border-radius:22px;box-shadow:var(--shadow-sm);overflow:hidden;display:flex;flex-direction:column}
+    .card-media{position:relative}
+    .card-media img,.card-fallback{width:100%;height:220px;object-fit:cover;display:block;background:#edf0f5}
+    .card-fallback{display:grid;place-items:center;font-size:42px;color:#b0b9c8}
+    .badge{position:absolute;left:14px;top:14px;background:rgba(255,255,255,.92);backdrop-filter:blur(6px);border:1px solid rgba(226,230,237,.95);padding:6px 10px;border-radius:999px;font-size:12px;font-weight:700;color:#344054}
+    .card-body{padding:16px;display:flex;flex-direction:column;gap:10px;flex:1}
+    .card-body h3{font-size:20px;font-weight:700;letter-spacing:-.02em}
+    .meta{color:#475467;font-size:14px;line-height:1.6}
+    .chips{display:flex;flex-wrap:wrap;gap:8px}
+    .chip{display:inline-flex;align-items:center;background:#f5f7fb;border:1px solid var(--border);border-radius:999px;padding:6px 10px;font-size:12px;color:#475467}
+    .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto;padding-top:4px}
     .empty{padding:46px;background:#fff;border:1px dashed var(--border);border-radius:22px;text-align:center;color:var(--muted)}
-    .modal{position:fixed;inset:0;background:rgba(15,23,42,.62);display:none;align-items:center;justify-content:center;padding:20px;z-index:60}
+    .modal{position:fixed;inset:0;background:rgba(10,15,25,.62);display:none;align-items:center;justify-content:center;padding:18px;z-index:50}
     .modal.active{display:flex}
-    .modal-box{width:min(1120px,100%);background:#0f172a;border-radius:24px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.35)}
-    .modal-stage{position:relative;background:#0f172a}
-    .modal-stage img{width:100%;max-height:78vh;display:block;object-fit:contain}
-    .overlay{position:absolute;left:0;right:0;bottom:0;padding:20px;background:linear-gradient(180deg,rgba(15,23,42,0),rgba(15,23,42,.92))}
-    .overlay h3{margin:0 0 6px;color:#fff;font-size:24px}.overlay p{margin:0;color:rgba(255,255,255,.82);line-height:1.6}
-    .overlay .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
-    .overlay button,.overlay a{height:42px;border-radius:12px;padding:0 14px;font:inherit;font-weight:700;display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
-    .overlay .primary{background:#fff;color:#0f172a;border:none}
-    .overlay .secondary{background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.16)}
-    .thumbs{position:absolute;top:18px;left:18px;display:flex;gap:8px;flex-wrap:wrap;max-width:calc(100% - 80px)}
+    .modal-box{width:min(1100px,100%);background:#0f172a;border-radius:24px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.35);position:relative}
+    .modal-stage img{width:100%;max-height:78vh;display:block;object-fit:contain;background:#0f172a}
+    .modal-overlay{position:absolute;left:0;right:0;bottom:0;padding:22px;background:linear-gradient(180deg,rgba(15,23,42,0),rgba(15,23,42,.92))}
+    .modal-overlay h3{font-size:24px;color:#fff;margin-bottom:6px}
+    .modal-overlay p{color:rgba(255,255,255,.82);line-height:1.7}
+    .modal-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+    .modal-actions a,.modal-actions button{
+      height:42px;border-radius:12px;padding:0 14px;font:inherit;font-weight:700;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;cursor:pointer
+    }
+    .modal-actions .primary{background:#fff;color:#0f172a;border:none}
+    .modal-actions .secondary{background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.16)}
+    .thumbs{position:absolute;top:16px;left:16px;display:flex;gap:8px;flex-wrap:wrap;max-width:calc(100% - 84px)}
     .thumbs img{width:68px;height:50px;object-fit:cover;border-radius:10px;border:2px solid transparent;cursor:pointer;background:rgba(255,255,255,.12)}
     .thumbs img.active{border-color:#fff}
-    .close{position:absolute;right:18px;top:18px;width:40px;height:40px;border-radius:999px;border:none;background:rgba(255,255,255,.14);color:#fff;font-size:18px;cursor:pointer}
-    .scrollTop{position:fixed;right:18px;bottom:18px;width:48px;height:48px;border:none;border-radius:999px;background:var(--primary);color:#fff;box-shadow:var(--shadow);display:none;cursor:pointer;z-index:55}
-    @media (max-width:900px){.filter-grid{grid-template-columns:1fr 1fr}.hero h2{font-size:24px}.modal-box{border-radius:18px}}
-    @media (max-width:640px){.filter-grid{grid-template-columns:1fr}.meta-row{flex-direction:column;align-items:flex-start;gap:6px}.overlay h3{font-size:20px}}
+    .close{position:absolute;right:16px;top:16px;width:40px;height:40px;border-radius:999px;border:none;background:rgba(255,255,255,.14);color:#fff;font-size:18px;cursor:pointer}
+    .scrollTop{position:fixed;right:18px;bottom:18px;width:48px;height:48px;border:none;border-radius:999px;background:var(--primary);color:#fff;box-shadow:var(--shadow-md);display:none;cursor:pointer;z-index:55}
+    @media(max-width:980px){.filter-grid{grid-template-columns:1fr 1fr}.hero-card h2{font-size:24px}}
+    @media(max-width:640px){.filter-grid{grid-template-columns:1fr}.hero-card{padding:18px}.modal-overlay h3{font-size:20px}}
   </style>
 </head>
 <body>
   <header class="topbar">
     <div class="container topbar-inner">
       <div class="brand">
-        <img src="./logo.png" alt="Logo" />
-        <div>
+        <img class="brand-logo" src="./logo.png" alt="Bahçeşehir Üniversitesi logosu" />
+        <div class="brand-text">
           <h1 id="siteTitle">Bahçeşehir Üniversitesi Derslikleri</h1>
-          <p id="siteSubtitle">Derslik Görselleri ve Harita Sistemi</p>
+          <p id="siteSubtitle">Derslik Görselleri</p>
         </div>
       </div>
-      <a class="btn-link" href="./admin.html">Yönetim Paneli</a>
     </div>
   </header>
 
   <main class="container">
     <section class="hero">
       <div class="hero-card">
-        <h2>Kampüs içinde sınıfı bulun, haritada görüntüleyin.</h2>
-        <p>Derslik fotoğrafları, kat bilgileri ve rota sayfası tek ekranda.</p>
+        <h2>Derslikleri inceleyin, filtreleyin ve haritada bulun.</h2>
+        <p>Kampüs, blok, kat ve derslik türüne göre arama yapabilir; sınıf detaylarını görüntüleyebilir ve uygun olan kat planında yol bulma ekranına geçebilirsiniz.</p>
       </div>
     </section>
 
     <section class="filters">
       <div class="filter-grid">
-        <input id="searchInput" class="input" type="text" placeholder="Sınıf kodu, kat, blok ara…" />
-        <select id="campusSelect" class="select"><option value="all">Tüm kampüsler</option></select>
-        <select id="blockSelect" class="select"><option value="all">Tüm bloklar</option></select>
-        <select id="sortSelect" class="select">
-          <option value="name-asc">Ada göre (A-Z)</option>
-          <option value="name-desc">Ada göre (Z-A)</option>
-          <option value="capacity-desc">Kapasite ↓</option>
-          <option value="capacity-asc">Kapasite ↑</option>
-          <option value="floor-asc">Kata göre</option>
-        </select>
-        <button id="resetBtn" class="btn">Temizle</button>
+        <div class="field">
+          <label>Ara</label>
+          <input id="searchInput" type="text" placeholder="Sınıf kodu, blok, kat..." />
+        </div>
+        <div class="field">
+          <label>Kampüs</label>
+          <select id="campusFilter"><option value="">Tümü</option></select>
+        </div>
+        <div class="field">
+          <label>Blok</label>
+          <select id="blockFilter"><option value="">Tümü</option></select>
+        </div>
+        <div class="field">
+          <label>Kat</label>
+          <select id="floorFilter"><option value="">Tümü</option></select>
+        </div>
+        <div class="field">
+          <label>Derslik Türü</label>
+          <select id="typeFilter"><option value="">Tümü</option></select>
+        </div>
+      </div>
+      <div class="filter-bar">
+        <div class="muted"><strong id="resultCount">0</strong> sonuç görüntüleniyor.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button id="activeOnlyBtn" class="btn btn-ghost">Sadece aktifler</button>
+          <button id="resetFiltersBtn" class="btn btn-ghost">Filtreleri temizle</button>
+        </div>
       </div>
     </section>
 
-    <div class="meta-row">
-      <div class="count"><strong id="resultCount">0</strong> kayıt bulundu</div>
-      <div class="count">Karttan doğrudan <strong>Haritada Göster</strong> sayfasına geçebilirsiniz.</div>
-    </div>
-
-    <section id="cardGrid" class="grid"></section>
-    <div id="emptyState" class="empty" style="display:none">Kayıt bulunamadı.</div>
+    <section id="grid" class="grid"></section>
   </main>
 
-  <div id="galleryModal" class="modal">
+  <div id="modal" class="modal">
     <div class="modal-box">
+      <button id="closeModal" class="close">✕</button>
+      <div id="thumbs" class="thumbs"></div>
       <div class="modal-stage">
-        <button id="closeModal" class="close">✕</button>
-        <div id="thumbGrid" class="thumbs"></div>
-        <img id="mainImage" alt="Derslik görseli" />
-        <div class="overlay">
-          <h3 id="modalTitle">-</h3>
-          <p id="modalMeta">-</p>
-          <div class="actions">
-            <a id="openMapBtn" class="primary" href="./map.html">Haritada Göster</a>
-            <button id="downloadImage" class="secondary">Görseli İndir</button>
-            <button id="copyImage" class="secondary">Görseli Kopyala</button>
-          </div>
+        <img id="modalImage" alt="" />
+      </div>
+      <div class="modal-overlay">
+        <h3 id="modalTitle"></h3>
+        <p id="modalMeta"></p>
+        <div class="modal-actions">
+          <a id="mapLink" class="primary" href="./map.html">Haritada Göster</a>
+          <button id="copyCodeBtn" class="secondary">Sınıf Kodunu Kopyala</button>
         </div>
       </div>
     </div>
@@ -134,214 +163,204 @@
 
   <script type="module">
     import { db } from './firebase-config.js';
-    import { collection, getDocs, query, orderBy, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js';
+    import { collection, getDocs, getDoc, query, orderBy, doc } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js';
 
-    const $ = s => document.querySelector(s);
-    const searchInput = $('#searchInput');
-    const campusSelect = $('#campusSelect');
-    const blockSelect = $('#blockSelect');
-    const sortSelect = $('#sortSelect');
-    const resetBtn = $('#resetBtn');
-    const cardGrid = $('#cardGrid');
-    const emptyState = $('#emptyState');
-    const resultCount = $('#resultCount');
+    const $ = id => document.getElementById(id);
+    let campuses = [], blocks = [], classrooms = [], classroomTypes = [], settings = {};
+    let activeOnly = false;
+    let currentModalClassroom = null;
 
-    const galleryModal = $('#galleryModal');
-    const closeModal = $('#closeModal');
-    const mainImage = $('#mainImage');
-    const thumbGrid = $('#thumbGrid');
-    const modalTitle = $('#modalTitle');
-    const modalMeta = $('#modalMeta');
-    const openMapBtn = $('#openMapBtn');
-    const downloadImage = $('#downloadImage');
-    const copyImage = $('#copyImage');
-    const scrollTopBtn = $('#scrollTopBtn');
-
-    let campuses = [], blocks = [], classrooms = [], activeItem = null, activeImageUrl = '';
+    const emojiForType = type => ({
+      'amfi':'🎓','laboratuvar':'🧪','lab':'🧪','derslik':'🏫','sınıf':'🏫','studio':'🎙️','stüdyo':'🎙️'
+    })[(type || '').toLowerCase()] || '🏫';
 
     function escapeHtml(str='') {
       return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
     }
 
-    function floorNumber(text) {
-      const s = String(text || '').trim();
-      if (!s) return 0;
-      const n = s.match(/-?\d+/);
-      return n ? Number(n[0]) : 0;
-    }
-
-    async function loadSettings() {
+    async function loadData() {
+      const safeGet = async (name, orderField='name') => {
+        try { return await getDocs(query(collection(db, name), orderBy(orderField))); }
+        catch { return await getDocs(collection(db, name)); }
+      };
+      const [campSnap, blockSnap, classSnap, typeSnap] = await Promise.all([
+        safeGet('campuses', 'sortOrder'),
+        safeGet('blocks', 'sortOrder'),
+        safeGet('classrooms', 'code'),
+        safeGet('classroomTypes', 'name')
+      ]);
+      campuses = campSnap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b)=>Number(a.sortOrder||0)-Number(b.sortOrder||0)||String(a.name||'').localeCompare(String(b.name||''), 'tr'));
+      blocks = blockSnap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b)=>Number(a.sortOrder||0)-Number(b.sortOrder||0)||String(a.name||'').localeCompare(String(b.name||''), 'tr'));
+      classrooms = classSnap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b)=>String(a.code||'').localeCompare(String(b.code||''), 'tr'));
+      classroomTypes = typeSnap.docs.map(d => ({ id: d.id, ...d.data() }));
       try {
-        const snap = await getDoc(doc(db, 'settings', 'site'));
-        if (snap.exists()) {
-          const s = snap.data();
-          $('#siteTitle').textContent = s.title || 'Bahçeşehir Üniversitesi Derslikleri';
-          $('#siteSubtitle').textContent = s.subtitle || 'Derslik Görselleri ve Harita Sistemi';
-          document.title = s.title || document.title;
-        }
-      } catch (e) { console.warn(e); }
+        const setSnap = await getDoc(doc(db, 'settings', 'site'));
+        settings = setSnap.exists() ? setSnap.data() : {};
+      } catch { settings = {}; }
+      $('siteTitle').textContent = settings.title || 'Bahçeşehir Üniversitesi Derslikleri';
+      $('siteSubtitle').textContent = settings.subtitle || 'Derslik Görselleri';
+      fillFilters();
+      render();
     }
 
     function fillFilters() {
-      const campusMap = new Map();
-      campuses.forEach(c => campusMap.set(c.id, c));
-      const blockMap = new Map();
-      blocks.forEach(b => blockMap.set(b.id, b));
+      $('campusFilter').innerHTML = '<option value="">Tümü</option>' + campuses.map(c => `<option value="${c.id}">${escapeHtml(c.name || '')}</option>`).join('');
+      $('typeFilter').innerHTML = '<option value="">Tümü</option>' + classroomTypes.map(t => `<option value="${escapeHtml(t.name || '')}">${escapeHtml(t.name || '')}</option>`).join('');
+      updateBlockOptions();
+      updateFloorOptions();
+    }
 
-      campusSelect.innerHTML = '<option value="all">Tüm kampüsler</option>' +
-        campuses.map(c => `<option value="${c.id}">${escapeHtml(c.name || '-')}</option>`).join('');
+    function updateBlockOptions() {
+      const campusId = $('campusFilter').value;
+      const filtered = blocks.filter(b => !campusId || b.campusId === campusId);
+      const current = $('blockFilter').value;
+      $('blockFilter').innerHTML = '<option value="">Tümü</option>' + filtered.map(b => `<option value="${b.id}">${escapeHtml(b.name || '')}</option>`).join('');
+      if (filtered.some(b => b.id === current)) $('blockFilter').value = current;
+    }
 
-      rebuildBlockOptions();
+    function updateFloorOptions() {
+      const campusId = $('campusFilter').value;
+      const blockId = $('blockFilter').value;
+      const floors = Array.from(new Set(
+        classrooms
+          .filter(c => (!campusId || c.campusId === campusId) && (!blockId || c.blockId === blockId))
+          .map(c => (c.floor || '').trim())
+          .filter(Boolean)
+      )).sort((a,b)=>a.localeCompare(b,'tr'));
+      const current = $('floorFilter').value;
+      $('floorFilter').innerHTML = '<option value="">Tümü</option>' + floors.map(f => `<option value="${escapeHtml(f)}">${escapeHtml(f)}</option>`).join('');
+      if (floors.includes(current)) $('floorFilter').value = current;
+    }
 
-      classrooms.forEach(c => {
-        c.campusName = c.campusName || campusMap.get(c.campusId)?.name || '-';
-        c.blockName = c.blockName || blockMap.get(c.blockId)?.name || '-';
+    function filteredClassrooms() {
+      const q = $('searchInput').value.trim().toLowerCase();
+      const campusId = $('campusFilter').value;
+      const blockId = $('blockFilter').value;
+      const floor = $('floorFilter').value;
+      const type = $('typeFilter').value;
+      return classrooms.filter(c => {
+        if (activeOnly && c.active === false) return false;
+        if (campusId && c.campusId !== campusId) return false;
+        if (blockId && c.blockId !== blockId) return false;
+        if (floor && (c.floor || '') !== floor) return false;
+        if (type && (c.type || '') !== type) return false;
+        const block = blocks.find(b => b.id === c.blockId);
+        const campus = campuses.find(x => x.id === c.campusId);
+        const hay = [c.code, c.floor, c.type, block?.name, campus?.name, ...(c.features || [])]
+          .filter(Boolean).join(' ').toLowerCase();
+        return !q || hay.includes(q);
       });
     }
 
-    function rebuildBlockOptions() {
-      const campusId = campusSelect.value;
-      const filtered = blocks.filter(b => campusId === 'all' || b.campusId === campusId);
-      const current = blockSelect.value;
-      blockSelect.innerHTML = '<option value="all">Tüm bloklar</option>' +
-        filtered.map(b => `<option value="${b.id}">${escapeHtml(b.name || '-')}</option>`).join('');
-      if ([...blockSelect.options].some(o => o.value === current)) blockSelect.value = current;
-    }
-
-    function getFiltered() {
-      const q = searchInput.value.trim().toLowerCase();
-      const campusId = campusSelect.value;
-      const blockId = blockSelect.value;
-      const sort = sortSelect.value;
-      let list = classrooms.filter(c => c.active !== false).filter(c => {
-        const hay = `${c.code || ''} ${c.campusName || ''} ${c.blockName || ''} ${c.floor || ''} ${c.type || ''}`.toLowerCase();
-        return (campusId === 'all' || c.campusId === campusId) &&
-               (blockId === 'all' || c.blockId === blockId) &&
-               (!q || hay.includes(q));
-      });
-
-      list.sort((a, b) => {
-        switch (sort) {
-          case 'name-desc': return String(b.code || '').localeCompare(String(a.code || ''), 'tr');
-          case 'capacity-desc': return Number(b.capacity || 0) - Number(a.capacity || 0);
-          case 'capacity-asc': return Number(a.capacity || 0) - Number(b.capacity || 0);
-          case 'floor-asc': return floorNumber(a.floor) - floorNumber(b.floor);
-          default: return String(a.code || '').localeCompare(String(b.code || ''), 'tr');
-        }
-      });
-      return list;
-    }
-
-    function renderCards() {
-      const items = getFiltered();
-      resultCount.textContent = items.length;
-      cardGrid.innerHTML = '';
-      emptyState.style.display = items.length ? 'none' : 'block';
-      for (const item of items) {
-        const firstImage = Array.isArray(item.images) && item.images[0] ? item.images[0] : '';
-        const el = document.createElement('article');
-        el.className = 'card';
-        el.innerHTML = `
-          ${firstImage ? `<img src="${firstImage}" alt="${escapeHtml(item.code || 'Derslik')}" />` : `<div class="card-img-fallback">🏫</div>`}
-          <div class="card-body">
-            <div class="code">${escapeHtml(item.code || '-')}</div>
-            <div class="location">${escapeHtml(item.campusName || '-')} › ${escapeHtml(item.blockName || '-')} › ${escapeHtml(item.floor || '-')}</div>
-            <div class="chips">
-              <span class="chip">👥 ${Number(item.capacity || 0)} kişi</span>
-              <span class="chip">🏷 ${escapeHtml(item.type || 'Sınıf')}</span>
-            </div>
-            <div class="card-actions">
-              <button class="ghost details-btn">Detay</button>
-              <a class="btn-link" href="./map.html?classroom=${encodeURIComponent(item.id)}">Haritada Göster</a>
-            </div>
-          </div>`;
-        el.querySelector('.details-btn').addEventListener('click', () => openModal(item));
-        el.querySelector('img, .card-img-fallback')?.addEventListener?.('click', () => openModal(item));
-        cardGrid.appendChild(el);
+    function render() {
+      const list = filteredClassrooms();
+      $('resultCount').textContent = list.length;
+      const grid = $('grid');
+      if (!list.length) {
+        grid.innerHTML = '<div class="empty">Bu filtrelere uygun sınıf bulunamadı.</div>';
+        return;
       }
+      grid.innerHTML = list.map(c => {
+        const block = blocks.find(b => b.id === c.blockId);
+        const campus = campuses.find(x => x.id === c.campusId);
+        const image = c.thumbnailUrl || (Array.isArray(c.images) && c.images[0]) || '';
+        const features = Array.isArray(c.features) ? c.features : [];
+        return `
+          <article class="card">
+            <div class="card-media">
+              ${image ? `<img src="${image}" alt="${escapeHtml(c.code || '')}">` : `<div class="card-fallback">${emojiForType(c.type)}</div>`}
+              <div class="badge">${escapeHtml(c.type || 'Derslik')}</div>
+            </div>
+            <div class="card-body">
+              <h3>${escapeHtml(c.code || 'Sınıf')}</h3>
+              <div class="meta">${escapeHtml(campus?.name || '')}${block ? ' • ' + escapeHtml(block.name || '') : ''}${c.floor ? ' • ' + escapeHtml(c.floor) : ''}</div>
+              <div class="chips">
+                <span class="chip">Kapasite: ${Number(c.capacity || 0)}</span>
+                ${(c.active === false) ? '<span class="chip">Pasif</span>' : '<span class="chip">Aktif</span>'}
+                ${features.slice(0,2).map(f => `<span class="chip">${escapeHtml(f)}</span>`).join('')}
+              </div>
+              <div class="actions">
+                <button class="btn btn-ghost" data-open="${c.id}">Detay</button>
+                <a class="btn btn-primary" href="./map.html?classroom=${encodeURIComponent(c.id)}">Haritada Göster</a>
+              </div>
+            </div>
+          </article>
+        `;
+      }).join('');
+
+      grid.querySelectorAll('[data-open]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = btn.dataset.open;
+          const item = classrooms.find(x => x.id === id);
+          if (item) openModal(item);
+        });
+      });
     }
 
-    function setActiveImage(url) {
-      activeImageUrl = url || '';
-      mainImage.src = activeImageUrl || '';
+    function openModal(classroom) {
+      currentModalClassroom = classroom;
+      const images = Array.isArray(classroom.images) ? classroom.images : [];
+      const primary = classroom.thumbnailUrl || images[0] || '';
+      $('modalImage').src = primary || '';
+      $('modalImage').style.display = primary ? 'block' : 'none';
+      $('modalTitle').textContent = classroom.code || 'Sınıf';
+      const block = blocks.find(b => b.id === classroom.blockId);
+      const campus = campuses.find(c => c.id === classroom.campusId);
+      $('modalMeta').textContent = [campus?.name, block?.name, classroom.floor, classroom.type, `Kapasite: ${Number(classroom.capacity || 0)}`]
+        .filter(Boolean).join(' • ');
+      $('mapLink').href = `./map.html?classroom=${encodeURIComponent(classroom.id)}`;
+      $('thumbs').innerHTML = images.map((img, i) => `<img class="${img === primary ? 'active' : ''}" src="${img}" data-img="${i}" alt="">`).join('');
+      $('thumbs').querySelectorAll('img').forEach(img => {
+        img.addEventListener('click', () => {
+          $('modalImage').src = img.src;
+          $('thumbs').querySelectorAll('img').forEach(x => x.classList.remove('active'));
+          img.classList.add('active');
+        });
+      });
+      $('modal').classList.add('active');
     }
 
-    function openModal(item) {
-      activeItem = item;
-      const images = Array.isArray(item.images) ? item.images.filter(Boolean) : [];
-      modalTitle.textContent = item.code || '-';
-      modalMeta.innerHTML = `${escapeHtml(item.campusName || '-')} › ${escapeHtml(item.blockName || '-')} &nbsp; • &nbsp; ${escapeHtml(item.floor || '-')} &nbsp; • &nbsp; ${Number(item.capacity || 0)} kişi`;
-      openMapBtn.href = `./map.html?classroom=${encodeURIComponent(item.id)}`;
-      setActiveImage(images[0] || '');
-      thumbGrid.innerHTML = images.map((src, i) => `<img class="${i===0?'active':''}" src="${src}" data-src="${src}" alt="">`).join('');
-      thumbGrid.querySelectorAll('img').forEach(img => img.addEventListener('click', () => {
-        setActiveImage(img.dataset.src);
-        thumbGrid.querySelectorAll('img').forEach(t => t.classList.remove('active'));
-        img.classList.add('active');
-      }));
-      galleryModal.classList.add('active');
-    }
-
-    closeModal.addEventListener('click', () => galleryModal.classList.remove('active'));
-    galleryModal.addEventListener('click', e => { if (e.target === galleryModal) galleryModal.classList.remove('active'); });
-
-    downloadImage.addEventListener('click', async () => {
-      if (!activeImageUrl) return;
-      const a = document.createElement('a');
-      a.href = activeImageUrl;
-      a.download = `BAU-${(activeItem?.code || 'derslik').replace(/[^\w\-]+/g,'_')}.jpg`;
-      a.click();
-    });
-
-    copyImage.addEventListener('click', async () => {
+    $('closeModal').addEventListener('click', () => $('modal').classList.remove('active'));
+    $('modal').addEventListener('click', e => { if (e.target === $('modal')) $('modal').classList.remove('active'); });
+    $('copyCodeBtn').addEventListener('click', async () => {
+      if (!currentModalClassroom?.code) return;
       try {
-        if (!activeImageUrl || !navigator.clipboard || !window.ClipboardItem) return;
-        const blob = await fetch(activeImageUrl).then(r => r.blob());
-        await navigator.clipboard.write([new ClipboardItem({ [blob.type || 'image/png']: blob })]);
-        copyImage.textContent = 'Kopyalandı';
-        setTimeout(() => copyImage.textContent = 'Görseli Kopyala', 1600);
-      } catch (e) {
-        alert('Bu tarayıcıda görsel kopyalama desteklenmiyor veya CORS engeli var.');
-      }
+        await navigator.clipboard.writeText(currentModalClassroom.code);
+        $('copyCodeBtn').textContent = 'Kopyalandı';
+        setTimeout(() => $('copyCodeBtn').textContent = 'Sınıf Kodunu Kopyala', 1200);
+      } catch {}
     });
 
-    campusSelect.addEventListener('change', () => { rebuildBlockOptions(); renderCards(); });
-    blockSelect.addEventListener('change', renderCards);
-    searchInput.addEventListener('input', renderCards);
-    sortSelect.addEventListener('change', renderCards);
-    resetBtn.addEventListener('click', () => {
-      searchInput.value = '';
-      campusSelect.value = 'all';
-      rebuildBlockOptions();
-      blockSelect.value = 'all';
-      sortSelect.value = 'name-asc';
-      renderCards();
+    $('campusFilter').addEventListener('change', () => { updateBlockOptions(); updateFloorOptions(); render(); });
+    $('blockFilter').addEventListener('change', () => { updateFloorOptions(); render(); });
+    $('floorFilter').addEventListener('change', render);
+    $('typeFilter').addEventListener('change', render);
+    $('searchInput').addEventListener('input', render);
+    $('activeOnlyBtn').addEventListener('click', () => {
+      activeOnly = !activeOnly;
+      $('activeOnlyBtn').textContent = activeOnly ? 'Tüm sınıflar' : 'Sadece aktifler';
+      render();
+    });
+    $('resetFiltersBtn').addEventListener('click', () => {
+      $('searchInput').value = '';
+      $('campusFilter').value = '';
+      updateBlockOptions();
+      $('blockFilter').value = '';
+      updateFloorOptions();
+      $('floorFilter').value = '';
+      $('typeFilter').value = '';
+      activeOnly = false;
+      $('activeOnlyBtn').textContent = 'Sadece aktifler';
+      render();
     });
 
+    const scrollBtn = $('scrollTopBtn');
     window.addEventListener('scroll', () => {
-      scrollTopBtn.style.display = window.scrollY > 320 ? 'block' : 'none';
+      scrollBtn.style.display = window.scrollY > 320 ? 'block' : 'none';
     });
-    scrollTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+    scrollBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 
-    async function init() {
-      await loadSettings();
-      const [campusSnap, blockSnap, classroomSnap] = await Promise.all([
-        getDocs(query(collection(db, 'campuses'), orderBy('sortOrder'))).catch(() => getDocs(collection(db,'campuses'))),
-        getDocs(query(collection(db, 'blocks'), orderBy('sortOrder'))).catch(() => getDocs(collection(db,'blocks'))),
-        getDocs(query(collection(db, 'classrooms'), orderBy('code'))).catch(() => getDocs(collection(db,'classrooms')))
-      ]);
-      campuses = campusSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-      blocks = blockSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-      classrooms = classroomSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-      fillFilters();
-      renderCards();
-    }
-
-    init().catch(err => {
-      console.error(err);
-      emptyState.style.display = 'block';
-      emptyState.textContent = 'Veriler yüklenemedi. Firebase ayarlarını kontrol edin.';
-    });
+    loadData();
   </script>
 </body>
 </html>
