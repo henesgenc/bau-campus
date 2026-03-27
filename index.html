@@ -711,8 +711,8 @@
       return canvas;
     }
 
-    function getBrandedCacheKey(item, imageUrl) {
-      return `${item?.id || 'unknown'}__${imageUrl || ''}`;
+    function getBrandedCacheKey(item, imageUrl, format = 'jpeg') {
+      return `${item?.id || 'unknown'}__${imageUrl || ''}__${format}`;
     }
 
     async function blobFromUrl(url) {
@@ -721,18 +721,36 @@
       return await response.blob();
     }
 
-    async function getOrCreateBrandedBlob(item, imageUrl, buttonEl, loadingText = 'Hazırlanıyor...') {
+    async function canvasToBlob(canvas, type = 'image/jpeg', quality = 0.92) {
+      return await new Promise(resolve => canvas.toBlob(resolve, type, quality));
+    }
+
+    function showClipboardSupportInfo() {
+      if (!window.isSecureContext) {
+        alert('Görsel kopyalama için site HTTPS altında açılmalıdır.');
+        return false;
+      }
+
+      if (!navigator.clipboard || typeof window.ClipboardItem === 'undefined') {
+        alert('Bu tarayıcı görsel kopyalamayı desteklemiyor. Lütfen indirme seçeneğini kullanın.');
+        return false;
+      }
+
+      return true;
+    }
+
+    async function getOrCreateBrandedBlob(item, imageUrl, buttonEl, loadingText = 'Hazırlanıyor...', format = 'jpeg') {
       if (!item || !imageUrl) return null;
 
-      const cacheKey = getBrandedCacheKey(item, imageUrl);
+      const cacheKey = getBrandedCacheKey(item, imageUrl, format);
 
-      // 1) Önce oturum içi cache
       if (brandedImageBlobCache.has(cacheKey)) {
         return brandedImageBlobCache.get(cacheKey);
       }
 
-      // 2) Firestore/Storage cache (mevcut şema tek branded URL tuttuğu için korunuyor)
-      if (item.brandedImageUrl) {
+      // Kalıcı cache yalnızca jpeg brandedImageUrl alanında tutuluyor.
+      // jpeg istendiğinde önce bunu kullan, png için mevcut canvas'tan üret.
+      if (format === 'jpeg' && item.brandedImageUrl) {
         if (buttonEl) buttonEl.textContent = loadingText;
         try {
           const cachedBlob = await blobFromUrl(item.brandedImageUrl);
@@ -744,37 +762,54 @@
         }
       }
 
-      // 3) Yoksa yeniden üret
       if (buttonEl) buttonEl.textContent = loadingText;
       const canvas = await generateBrandedImage(item, imageUrl);
-      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.92));
+
+      const outputType = format === 'png' ? 'image/png' : 'image/jpeg';
+      const quality = format === 'png' ? undefined : 0.92;
+      const blob = await canvasToBlob(canvas, outputType, quality);
+
       if (!blob) throw new Error('Blob oluşturulamadı');
 
       brandedImageBlobCache.set(cacheKey, blob);
 
-      // 4) Sessizce Storage'a yükle ve Firestore'u güncelle
-      try {
-        if (buttonEl) buttonEl.textContent = 'Kaydediliyor...';
-        const path = `branded/${item.id}-${item.code || 'derslik'}.jpg`;
-        const storageRef = ref(storage, path);
-        await uploadBytes(storageRef, blob);
-        const downloadUrl = await getDownloadURL(storageRef);
-        await updateDoc(doc(db, 'classrooms', item.id), {
-          brandedImageUrl: downloadUrl,
-          brandedImagePath: path
-        });
-        item.brandedImageUrl = downloadUrl;
-        item.brandedImagePath = path;
-        const cached = classrooms.find(c => c.id === item.id);
-        if (cached) {
-          cached.brandedImageUrl = downloadUrl;
-          cached.brandedImagePath = path;
+      // Yalnızca jpeg için Storage kalıcı cache yaz.
+      if (format === 'jpeg') {
+        try {
+          if (buttonEl) buttonEl.textContent = 'Kaydediliyor...';
+          const path = `branded/${item.id}-${item.code || 'derslik'}.jpg`;
+          const storageRef = ref(storage, path);
+          await uploadBytes(storageRef, blob);
+          const downloadUrl = await getDownloadURL(storageRef);
+          await updateDoc(doc(db, 'classrooms', item.id), {
+            brandedImageUrl: downloadUrl,
+            brandedImagePath: path
+          });
+          item.brandedImageUrl = downloadUrl;
+          item.brandedImagePath = path;
+
+          const cached = classrooms.find(c => c.id === item.id);
+          if (cached) {
+            cached.brandedImageUrl = downloadUrl;
+            cached.brandedImagePath = path;
+          }
+        } catch (uploadErr) {
+          console.warn('Branded görsel Storage\'a yüklenemedi:', uploadErr);
         }
-      } catch (uploadErr) {
-        console.warn('Branded görsel Storage\'a yüklenemedi:', uploadErr);
       }
 
       return blob;
+    }
+
+    async function fallbackToDownloadFromBlob(blob, fileName) {
+      const localUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = localUrl;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(localUrl);
     }
 
     async function handleCanvasDownload() {
@@ -785,18 +820,11 @@
       if (copyImage) copyImage.disabled = true;
 
       try {
-        const blob = await getOrCreateBrandedBlob(activeItem, activeImageUrl, downloadImage, 'Hazırlanıyor...');
+        const blob = await getOrCreateBrandedBlob(activeItem, activeImageUrl, downloadImage, 'Hazırlanıyor...', 'jpeg');
         if (!blob) throw new Error('Görsel hazırlanamadı');
 
         downloadImage.textContent = 'İndiriliyor...';
-        const localUrl = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = localUrl;
-        a.download = `BAU-${activeItem.code || 'derslik'}.jpg`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        URL.revokeObjectURL(localUrl);
+        await fallbackToDownloadFromBlob(blob, `BAU-${activeItem.code || 'derslik'}.jpg`);
       } catch (error) {
         console.error(error);
         alert('Görsel oluşturulamadı. Storage erişimi veya CORS ayarlarını kontrol edin.');
@@ -810,33 +838,41 @@
     async function handleCanvasCopy() {
       if (!activeItem || !activeImageUrl) return;
 
-      if (!navigator.clipboard || typeof ClipboardItem === 'undefined') {
-        alert('Bu tarayıcı görsel kopyalamayı desteklemiyor.');
-        return;
-      }
+      if (!showClipboardSupportInfo()) return;
 
       const originalText = copyImage.textContent;
       copyImage.disabled = true;
       downloadImage.disabled = true;
 
       try {
-        const blob = await getOrCreateBrandedBlob(activeItem, activeImageUrl, copyImage, 'Hazırlanıyor...');
+        const blob = await getOrCreateBrandedBlob(activeItem, activeImageUrl, copyImage, 'Hazırlanıyor...', 'png');
         if (!blob) throw new Error('Görsel hazırlanamadı');
 
         copyImage.textContent = 'Kopyalanıyor...';
         await navigator.clipboard.write([
           new ClipboardItem({
-            [blob.type || 'image/jpeg']: blob
+            [blob.type || 'image/png']: blob
           })
         ]);
 
         copyImage.textContent = 'Kopyalandı ✓';
         setTimeout(() => {
-          copyImage.textContent = originalText;
+          if (copyImage) copyImage.textContent = originalText;
         }, 1400);
       } catch (error) {
         console.error(error);
-        alert('Görsel panoya kopyalanamadı. Tarayıcı izinlerini kontrol edin.');
+        try {
+          const jpegBlob = await getOrCreateBrandedBlob(activeItem, activeImageUrl, copyImage, 'Hazırlanıyor...', 'jpeg');
+          if (jpegBlob) {
+            await fallbackToDownloadFromBlob(jpegBlob, `BAU-${activeItem.code || 'derslik'}.jpg`);
+            alert('Tarayıcı kopyalamaya izin vermedi. Görsel bunun yerine indirildi.');
+          } else {
+            throw error;
+          }
+        } catch (fallbackError) {
+          console.error(fallbackError);
+          alert('Görsel panoya kopyalanamadı. Tarayıcı izinlerini kontrol edin.');
+        }
       } finally {
         copyImage.disabled = false;
         downloadImage.disabled = false;
