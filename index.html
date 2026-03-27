@@ -343,6 +343,7 @@
             <div id="modalMeta" class="modal-meta"></div>
           </div>
           <div class="modal-actions">
+            <button id="copyImage" class="action-btn" type="button">⧉ Görseli Kopyala</button>
             <button id="downloadImage" class="action-btn" type="button">⭳ Görseli İndir</button>
           </div>
         </div>
@@ -372,6 +373,7 @@
     const mainImage = document.getElementById('mainImage');
     const thumbGrid = document.getElementById('thumbGrid');
     const downloadImage = document.getElementById('downloadImage');
+    const copyImage = document.getElementById('copyImage');
 
     let classrooms = [];
     let activeItem = null;
@@ -379,6 +381,7 @@
     let currentSort     = 'name-asc';
     let selectedCampus   = 'all';
     let selectedBuilding = 'all';
+    const brandedImageBlobCache = new Map();
 
     /* ── dropdown yardımcısı ── */
     function buildDropdown(btn, panel, getItems, onPick) {
@@ -708,41 +711,84 @@
       return canvas;
     }
 
+    function getBrandedCacheKey(item, imageUrl) {
+      return `${item?.id || 'unknown'}__${imageUrl || ''}`;
+    }
+
+    async function blobFromUrl(url) {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Dosya indirilemedi');
+      return await response.blob();
+    }
+
+    async function getOrCreateBrandedBlob(item, imageUrl, buttonEl, loadingText = 'Hazırlanıyor...') {
+      if (!item || !imageUrl) return null;
+
+      const cacheKey = getBrandedCacheKey(item, imageUrl);
+
+      // 1) Önce oturum içi cache
+      if (brandedImageBlobCache.has(cacheKey)) {
+        return brandedImageBlobCache.get(cacheKey);
+      }
+
+      // 2) Firestore/Storage cache (mevcut şema tek branded URL tuttuğu için korunuyor)
+      if (item.brandedImageUrl) {
+        if (buttonEl) buttonEl.textContent = loadingText;
+        try {
+          const cachedBlob = await blobFromUrl(item.brandedImageUrl);
+          brandedImageBlobCache.set(cacheKey, cachedBlob);
+          return cachedBlob;
+        } catch (e) {
+          item.brandedImageUrl = null;
+          item.brandedImagePath = null;
+        }
+      }
+
+      // 3) Yoksa yeniden üret
+      if (buttonEl) buttonEl.textContent = loadingText;
+      const canvas = await generateBrandedImage(item, imageUrl);
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.92));
+      if (!blob) throw new Error('Blob oluşturulamadı');
+
+      brandedImageBlobCache.set(cacheKey, blob);
+
+      // 4) Sessizce Storage'a yükle ve Firestore'u güncelle
+      try {
+        if (buttonEl) buttonEl.textContent = 'Kaydediliyor...';
+        const path = `branded/${item.id}-${item.code || 'derslik'}.jpg`;
+        const storageRef = ref(storage, path);
+        await uploadBytes(storageRef, blob);
+        const downloadUrl = await getDownloadURL(storageRef);
+        await updateDoc(doc(db, 'classrooms', item.id), {
+          brandedImageUrl: downloadUrl,
+          brandedImagePath: path
+        });
+        item.brandedImageUrl = downloadUrl;
+        item.brandedImagePath = path;
+        const cached = classrooms.find(c => c.id === item.id);
+        if (cached) {
+          cached.brandedImageUrl = downloadUrl;
+          cached.brandedImagePath = path;
+        }
+      } catch (uploadErr) {
+        console.warn('Branded görsel Storage\'a yüklenemedi:', uploadErr);
+      }
+
+      return blob;
+    }
+
     async function handleCanvasDownload() {
       if (!activeItem || !activeImageUrl) return;
 
       const originalText = downloadImage.textContent;
       downloadImage.disabled = true;
+      if (copyImage) copyImage.disabled = true;
 
       try {
-        // 1) Önce cache'e bak — daha önce üretilmiş branded görsel var mı?
-        if (activeItem.brandedImageUrl) {
-          downloadImage.textContent = 'İndiriliyor...';
-          const response = await fetch(activeItem.brandedImageUrl);
-          if (response.ok) {
-            const blob = await response.blob();
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `BAU-${activeItem.code || 'derslik'}.jpg`;
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            URL.revokeObjectURL(url);
-            return;
-          }
-          // URL geçersizse cache'i temizleyip yeniden üret
-          activeItem.brandedImageUrl = null;
-          activeItem.brandedImagePath = null;
-        }
+        const blob = await getOrCreateBrandedBlob(activeItem, activeImageUrl, downloadImage, 'Hazırlanıyor...');
+        if (!blob) throw new Error('Görsel hazırlanamadı');
 
-        // 2) Cache yok — canvas'ta üret
-        downloadImage.textContent = 'Hazırlanıyor...';
-        const canvas = await generateBrandedImage(activeItem, activeImageUrl);
-        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.92));
-        if (!blob) throw new Error('Blob oluşturulamadı');
-
-        // 3) Üretilen görseli indir
+        downloadImage.textContent = 'İndiriliyor...';
         const localUrl = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = localUrl;
@@ -751,40 +797,60 @@
         a.click();
         a.remove();
         URL.revokeObjectURL(localUrl);
-
-        // 4) Arka planda Storage'a yükle ve Firestore'u güncelle (sessizce)
-        try {
-          downloadImage.textContent = 'Kaydediliyor...';
-          const path = `branded/${activeItem.id}-${activeItem.code || 'derslik'}.jpg`;
-          const storageRef = ref(storage, path);
-          await uploadBytes(storageRef, blob);
-          const downloadUrl = await getDownloadURL(storageRef);
-          await updateDoc(doc(db, 'classrooms', activeItem.id), {
-            brandedImageUrl: downloadUrl,
-            brandedImagePath: path
-          });
-          // Lokal nesneyi de güncelle ki aynı oturumda tekrar basılmasın
-          activeItem.brandedImageUrl = downloadUrl;
-          activeItem.brandedImagePath = path;
-          const cached = classrooms.find(c => c.id === activeItem.id);
-          if (cached) { cached.brandedImageUrl = downloadUrl; cached.brandedImagePath = path; }
-        } catch (uploadErr) {
-          // Yükleme başarısız olursa kullanıcıyı rahatsız etme; görsel zaten indirildi
-          console.warn('Branded görsel Storage\'a yüklenemedi:', uploadErr);
-        }
       } catch (error) {
         console.error(error);
         alert('Görsel oluşturulamadı. Storage erişimi veya CORS ayarlarını kontrol edin.');
       } finally {
         downloadImage.disabled = false;
+        if (copyImage) copyImage.disabled = false;
         downloadImage.textContent = originalText;
       }
     }
 
-    searchInput.addEventListener('input', renderCards);
+    async function handleCanvasCopy() {
+      if (!activeItem || !activeImageUrl) return;
+
+      if (!navigator.clipboard || typeof ClipboardItem === 'undefined') {
+        alert('Bu tarayıcı görsel kopyalamayı desteklemiyor.');
+        return;
+      }
+
+      const originalText = copyImage.textContent;
+      copyImage.disabled = true;
+      downloadImage.disabled = true;
+
+      try {
+        const blob = await getOrCreateBrandedBlob(activeItem, activeImageUrl, copyImage, 'Hazırlanıyor...');
+        if (!blob) throw new Error('Görsel hazırlanamadı');
+
+        copyImage.textContent = 'Kopyalanıyor...';
+        await navigator.clipboard.write([
+          new ClipboardItem({
+            [blob.type || 'image/jpeg']: blob
+          })
+        ]);
+
+        copyImage.textContent = 'Kopyalandı ✓';
+        setTimeout(() => {
+          copyImage.textContent = originalText;
+        }, 1400);
+      } catch (error) {
+        console.error(error);
+        alert('Görsel panoya kopyalanamadı. Tarayıcı izinlerini kontrol edin.');
+      } finally {
+        copyImage.disabled = false;
+        downloadImage.disabled = false;
+        if (copyImage.textContent !== 'Kopyalandı ✓') {
+          copyImage.textContent = originalText;
+        }
+      }
+    }
+
+    searchInput.addEventListener('input', renderCards);('input', renderCards);
     closeModal.addEventListener('click', () => galleryModal.classList.remove('active'));
     galleryModal.addEventListener('click', e => { if (e.target === galleryModal) galleryModal.classList.remove('active'); });
     downloadImage.addEventListener('click', handleCanvasDownload);
+    if (copyImage) copyImage.addEventListener('click', handleCanvasCopy);
 
     await loadSettings();
     loadClassrooms();
